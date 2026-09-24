@@ -12,3 +12,5 @@
 @media(max-width:390px){.hero h1{font-size:40px}.hero-art{min-height:250px}.roulette-card{padding:19px 12px}.section-head h2{font-size:18px}.candidate-count{display:none}.shortlist-head{align-items:flex-start;gap:8px}.shortlist-head p{max-width:150px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}.draw-button:hover{transform:none}}
 .text-button,.small-chips button,.candidate>button,.candidate select,.people input,.empty button{min-height:44px}
+@media(max-width:760px){.app{display:flex;flex-direction:column}.topbar{order:0}.workspace{order:1}.hero{order:2;margin-top:34px}.result-wrap{order:3}.utility{order:4}footer{order:5}}
+@media(max-width:760px){.app[data-mode=solo] .roulette-card{display:flex;flex-direction:column}.app[data-mode=solo] .roulette-card>.section-head:first-child{order:1}.app[data-mode=solo] .segmented{order:2}.app[data-mode=solo] .section-head.second{order:3}.app[data-mode=solo] .draw-button{order:4;margin-top:4px;margin-bottom:25px}.app[data-mode=solo] .chip-grid{order:5}.app[data-mode=solo] .details{order:6}.app[data-mode=solo] .empty{order:7}}
