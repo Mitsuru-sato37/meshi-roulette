@@ -1,6 +1,6 @@
-# メシ決めルーレット Implementation Plan
+# メシ決めルーレット Implementation Plan（完了済み履歴）
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **重要:** この文書は2026-09-24に実行済みの初回実装計画を保存した履歴資料です。チェックボックスやコマンドを再実行しないでください。現在の作業はリポジトリ直下の `HANDOFF.md` を起点にしてください。以下に残る `work/meshi-roulette` は移設前の作業パスを示します。
 
 **Goal:** 一人でも複数人でも、一台の端末から短時間で食事候補を決められる静的Webアプリを完成させる。
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Vinext/React、TypeScript、CSS、Vitest、Testing Library、ブラウザー `localStorage`、Google Maps Search URL
 
-**Spec:** `docs/superpowers/specs/2026-09-24-meshi-roulette-design.md`
+**Spec:** `docs/project/product-spec.md`
 
 ## Global Constraints
 
@@ -96,8 +96,8 @@ New-Item -ItemType Directory -Path work\meshi-roulette
 Then run each command with working directory `work/meshi-roulette`:
 
 ```powershell
-node C:\Users\msato\.codex\plugins\cache\openai-curated-remote\sites\0.1.71\scripts\project-setup.mjs
-node C:\Users\msato\.codex\plugins\cache\openai-curated-remote\sites\0.1.71\scripts\install-dependencies.mjs
+node <sites-plugin-root>/scripts/project-setup.mjs
+node <sites-plugin-root>/scripts/install-dependencies.mjs
 ```
 
 Expected: `work/meshi-roulette/package.json` と `app/page.tsx` が存在し、依存関係の導入が成功する。
@@ -196,7 +196,7 @@ Expected: build succeeds and emits static public output. Follow `sites-building/
 - [ ] **Step 6: 基盤をコミットする**
 
 ```powershell
-git init
+# 移設前にのみ必要だったため、現在のリポジトリでは実行しない
 git add .
 git commit -m "feat: scaffold meal roulette experience"
 ```

@@ -11,7 +11,7 @@
 - UI改善用の操作可能なモック: [docs/mockups/meshi-ui-v2-preview.html](docs/mockups/meshi-ui-v2-preview.html)
 - Figma: <https://www.figma.com/design/PvhUPe0BwZElnHhCmCGNsU>
 - 仕様: [docs/project/product-spec.md](docs/project/product-spec.md)
-- 実装計画: [docs/project/implementation-plan.md](docs/project/implementation-plan.md)
+- 完了済み実装計画（履歴資料・再実行禁止）: [docs/project/implementation-plan.md](docs/project/implementation-plan.md)
 - 直近の検証記録: [docs/project/implementation-review.md](docs/project/implementation-review.md)
 
 ## 決定済みの製品方針
@@ -53,7 +53,7 @@
 2. モバイルでのタップ数とスクロール量を減らす。
 3. 条件、除外、履歴を必要なときだけ展開する。
 4. 既存の抽選ロジック、保存、アクセシビリティを維持する。
-5. 自動試験、lint、ビルドを実行する。
+5. `pnpm test`、`pnpm run lint`、`pnpm run build`を実行する。
 6. 右側のプレビューで確認を受ける。公開はまだ行わない。
 
 ## Codexへ渡す開始プロンプト

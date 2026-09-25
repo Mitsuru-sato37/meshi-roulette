@@ -17,25 +17,26 @@
 最初に [HANDOFF.md](HANDOFF.md) を読んでください。仕様、UI方針、公開ルール、次の作業がまとまっています。
 
 - 製品仕様: [docs/project/product-spec.md](docs/project/product-spec.md)
-- 実装計画: [docs/project/implementation-plan.md](docs/project/implementation-plan.md)
+- 完了済み実装計画（履歴資料）: [docs/project/implementation-plan.md](docs/project/implementation-plan.md)
 - 実装レビュー: [docs/project/implementation-review.md](docs/project/implementation-review.md)
 - UIモック: [docs/mockups/meshi-ui-v2-preview.html](docs/mockups/meshi-ui-v2-preview.html)
 
 ## ローカル実行
 
-Node.js 22.13.0以上を使用します。
+Node.js 22.13.0以上と、`package.json`で固定しているpnpm 11.25.0を使用します。
 
 ```powershell
-npm install
-npm run dev
+corepack enable
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 主な検証コマンド:
 
 ```powershell
-npm test
-npm run lint
-npm run build
+pnpm test
+pnpm run lint
+pnpm run build
 ```
 
 ## 公開先
