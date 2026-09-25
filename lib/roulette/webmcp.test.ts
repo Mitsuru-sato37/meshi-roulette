@@ -1,0 +1,7 @@
+import { describe, expect, it, vi } from "vitest";
+import { registerMealTools } from "./webmcp";
+describe("WebMCP registration",()=>{
+  it("does nothing when modelContext is absent",()=>expect(()=>registerMealTools(async()=>({id:"a",name:"A"}),new AbortController().signal)).not.toThrow());
+  it("registers the contracted tool and returns only the drawn candidate",async()=>{ const registerTool=vi.fn(); const controller=new AbortController(); Object.assign(document,{modelContext:{registerTool}}); registerMealTools(async()=>({id:"ramen",name:"ラーメン"}),controller.signal); const [tool,options]=registerTool.mock.calls[0]; expect(tool).toMatchObject({name:"draw_meal_with_current_settings",inputSchema:{type:"object",properties:{},additionalProperties:false},annotations:{readOnlyHint:false}}); expect(options.signal).toBe(controller.signal); await expect(tool.execute()).resolves.toEqual({status:"drawn",candidateId:"ramen",candidateName:"ラーメン"}); delete (document as Document & {modelContext?:unknown}).modelContext; });
+  it("propagates draw failures",async()=>{ const registerTool=vi.fn(); Object.assign(document,{modelContext:{registerTool}}); registerMealTools(async()=>{throw new Error("no candidate")},new AbortController().signal); await expect(registerTool.mock.calls[0][0].execute()).rejects.toThrow("no candidate"); delete (document as Document & {modelContext?:unknown}).modelContext; });
+});
