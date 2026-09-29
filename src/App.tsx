@@ -55,6 +55,20 @@ export function App() {
     : buildCuisineCandidates(selection, foodCatalog);
   const history = store.getHistory();
   const savedRestaurants = store.getSavedRestaurants();
+  const buildSessionSnapshot = (foodIds: string[]) => ({
+    foodIds,
+    brandIds: selectedBrandIds,
+    excludeStoreIds: excludedStoreIds,
+    locationLabel: homeState.location.label,
+    conditions: {
+      budgetMax: homeState.conditions.budget,
+      transport: homeState.conditions.transport,
+      travelTimeMax: homeState.conditions.travelTime,
+      eatingTime: homeState.conditions.eatingTime,
+      parkingRequired: homeState.conditions.parking === 'required',
+      takeoutRequired: homeState.conditions.takeout,
+    },
+  });
 
   const clearGeneratedUi = () => {
     setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setProviderNotice(''); setMessage('');
@@ -97,7 +111,7 @@ export function App() {
   };
   const decideCuisine = () => {
     if (!cuisineResult) return;
-    recordDecision({ type: 'cuisine', id: cuisineResult.id, label: cuisineResult.label }, store);
+    recordDecision({ type: 'cuisine', id: cuisineResult.id, label: cuisineResult.label, sessionSnapshot: buildSessionSnapshot([cuisineResult.id]) }, store);
     setVersion((current) => current + 1); setMessage('料理を決定しました');
   };
   const findRestaurants = async () => {
@@ -147,7 +161,7 @@ export function App() {
   };
   const decideRestaurant = () => {
     if (!restaurantResult) return;
-    recordDecision({ type: 'restaurant', id: restaurantResult.id, label: restaurantResult.name, restaurantId: restaurantResult.id }, store);
+    recordDecision({ type: 'restaurant', id: restaurantResult.id, label: restaurantResult.name, restaurantId: restaurantResult.id, sessionSnapshot: buildSessionSnapshot(cuisineResult ? [cuisineResult.id] : restaurantResult.foodIds) }, store);
     setVersion((current) => current + 1); setMessage('この店に決定しました');
   };
   const saveRestaurant = () => {
@@ -157,13 +171,30 @@ export function App() {
   const toggleRestaurantSelection = (id: string) => setSelectedRestaurantIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   const drawSavedRestaurant = () => setSavedRouletteResult(savedRestaurants.length === 0 ? null : drawOne(savedRestaurants));
   const rerollSavedRestaurant = () => setSavedRouletteResult(savedRestaurants.length === 0 ? null : drawOne(savedRestaurants));
-  const decideSavedRestaurant = () => { if (!savedRouletteResult) return; recordDecision({ type: 'restaurant', id: savedRouletteResult.id, label: savedRouletteResult.name, restaurantId: savedRouletteResult.id }, store); setVersion((current) => current + 1); };
+  const decideSavedRestaurant = () => { if (!savedRouletteResult) return; recordDecision({ type: 'restaurant', id: savedRouletteResult.id, label: savedRouletteResult.name, restaurantId: savedRouletteResult.id, sessionSnapshot: buildSessionSnapshot(savedRouletteResult.foodIds) }, store); setVersion((current) => current + 1); };
   const rerunHistory = (item: DecisionHistory) => {
-    if (item.type !== 'cuisine') { setMessage('店舗履歴の再実行には、保存した検索条件が必要です'); setActiveTab('home'); return; }
-    setSelection({ include: [item.id], exclude: [] });
-    setHomeState((current) => resetGeneratedResults({ ...current, food: { include: [item.id], exclude: [] } }));
+    const snapshot = item.sessionSnapshot;
+    const foodIds = snapshot?.foodIds?.length ? snapshot.foodIds : item.type === 'cuisine' ? [item.id] : [];
+    if (foodIds.length === 0) { setMessage('この履歴には再実行に必要な条件がありません'); setActiveTab('home'); return; }
+    setSelection({ include: foodIds, exclude: [] });
+    setSelectedBrandIds(snapshot?.brandIds ?? []);
+    setExcludedStoreIds(snapshot?.excludeStoreIds ?? []);
+    setHomeState((current) => resetGeneratedResults({
+      ...current,
+      food: { include: foodIds, exclude: [] },
+      location: { ...current.location, label: snapshot?.locationLabel ?? null, mode: snapshot?.locationLabel ? 'specified' : 'auto' },
+      conditions: snapshot?.conditions ? {
+        ...current.conditions,
+        budget: snapshot.conditions.budgetMax ?? null,
+        transport: snapshot.conditions.transport as typeof current.conditions.transport ?? null,
+        travelTime: snapshot.conditions.travelTimeMax ?? null,
+        eatingTime: snapshot.conditions.eatingTime ?? 'now',
+        parking: snapshot.conditions.parkingRequired ? 'required' : 'unspecified',
+        takeout: snapshot.conditions.takeoutRequired ?? false,
+      } : current.conditions,
+    }));
     setActiveTab('home');
-    setMessage('履歴から料理を再実行します');
+    setMessage(item.type === 'restaurant' ? '履歴から店舗検索条件を復元しました' : '履歴から料理を再実行します');
   };
 
   const renderHome = () => (
