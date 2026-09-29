@@ -30,12 +30,15 @@ export type WeightedCandidate = { id?: string; weight?: number; [key: string]: u
 
 export type RestaurantCandidate = {
   id: string;
+  provider?: string;
+  providerPlaceId?: string;
   name: string;
   foodIds: string[];
   locationLabel: string;
   travelSummary: string;
   isOpen: boolean | null;
   budgetLabel: string;
+  location?: { latitude?: number; longitude?: number };
 };
 
 export type RestaurantQuery = {

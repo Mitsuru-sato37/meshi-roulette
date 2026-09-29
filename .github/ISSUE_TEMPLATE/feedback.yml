@@ -1,21 +1,22 @@
 name: 気づき・改善メモ
-description: スマートフォンから、使っていて気づいたことを1文だけでも残せます
-title: "[Feedback] "
+description: 利用中に気づいたことを短く残す
+title: "[feedback] "
 labels:
   - feedback
 body:
   - type: textarea
-    id: feedback
+    id: memo
     attributes:
-      label: 気づいたこと
-      description: 短い一言だけでも大丈夫です。
-      placeholder: 例）ラーメンに油そばがない
+      label: 気づき・改善メモ
+      description: 1文だけでも登録できます
+      placeholder: 例：ラーメンに油そばがない
     validations:
       required: true
   - type: textarea
-    id: screenshots
+    id: screenshot
     attributes:
-      label: スクリーンショット（任意）
-      description: 必要なら画像を貼り付けてください。
+      label: スクリーンショット
+      description: 必要に応じて画像を添付してください
+      placeholder: 画像をドラッグ＆ドロップ
     validations:
       required: false
