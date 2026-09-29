@@ -27,4 +27,11 @@ describe('fixture restaurant provider', () => {
 
     expect(restaurants.map((restaurant) => restaurant.name)).toEqual(['岐阜タンメン 名古屋駅店']);
   });
+
+  it('filters route candidates by the explicit detour limit', async () => {
+    const provider = createFixtureRestaurantProvider();
+    const restaurants = await provider.search({ foodIds: ['ramen'], route: { origin: '名古屋駅', destination: '栄駅', maxDetourMinutes: 6 } });
+
+    expect(restaurants.map((restaurant) => restaurant.name)).toEqual(['麺処ひなた']);
+  });
 });

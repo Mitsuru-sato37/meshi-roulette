@@ -26,6 +26,7 @@ export function createFixtureRestaurantProvider(): RestaurantProvider {
         if (conditions?.parkingRequired && restaurant.hasParking !== true) return false;
         if (conditions?.takeoutRequired && restaurant.supportsTakeout !== true) return false;
         if (conditions?.eatingTime === 'now' && restaurant.isOpen !== true) return false;
+        if (query.route && (restaurant.routeDetourMinutes == null || restaurant.routeDetourMinutes > query.route.maxDetourMinutes)) return false;
         return true;
       });
     },

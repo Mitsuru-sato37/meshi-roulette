@@ -45,6 +45,7 @@ export type RestaurantCandidate = {
   transportModes?: string[];
   hasParking?: boolean | null;
   supportsTakeout?: boolean | null;
+  routeDetourMinutes?: number | null;
   location?: { latitude?: number; longitude?: number };
 };
 
