@@ -51,6 +51,6 @@ npm install
 npm run dev
 ```
 
-Google Placesを接続する場合は `.env.example` を `.env.local` にコピーし、APIキーを設定します。キーがない場合でも料理ルーレットとFixtureによる開発表示は動作しますが、店舗結果は実データではありません。
+本番運用では、店舗検索サーバーのURLを `.env.local` の `VITE_RESTAURANT_API_URL` に設定してください。検索条件・ブランド・場所・道中条件をサーバーへ送り、APIキーをブラウザへ公開しない構成を推奨します。移行用に `VITE_GOOGLE_PLACES_API_KEY` も利用できますが、キー管理とRoutes APIの実装が必要です。どちらも未設定の場合はFixtureによる開発表示になります。
 
 チェーン・ブランド指定は現在、Fixture上の「岐阜タンメン」で、ブランド選択・特定支店の除外・支店の直接選択まで確認できます。Google Places側のブランド／支店同定、現在地・道中検索、営業時間や経路条件は別途プロバイダー拡張が必要です。

@@ -9,6 +9,7 @@ import { createHomeSessionState, resetGeneratedResults, updateConditions, update
 import { createSession } from './application/session';
 import { createFixtureRestaurantProvider } from './providers/fixtureRestaurantProvider';
 import { createGooglePlacesProvider } from './providers/googlePlacesProvider';
+import { createRemoteRestaurantProvider } from './providers/remoteRestaurantProvider';
 import { fixtureBrands, fixtureRestaurants } from './providers/fixtureRestaurants';
 import { BottomNav, type AppTab } from './components/BottomNav';
 import { CandidateList } from './components/CandidateList';
@@ -48,7 +49,11 @@ export function App() {
   const [providerNotice, setProviderNotice] = useState('');
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
-  const restaurantProvider = useMemo(() => import.meta.env.VITE_GOOGLE_PLACES_API_KEY ? createGooglePlacesProvider({ apiKey: import.meta.env.VITE_GOOGLE_PLACES_API_KEY }) : createFixtureRestaurantProvider(), []);
+  const restaurantProvider = useMemo(() => import.meta.env.VITE_RESTAURANT_API_URL
+    ? createRemoteRestaurantProvider({ endpoint: import.meta.env.VITE_RESTAURANT_API_URL })
+    : import.meta.env.VITE_GOOGLE_PLACES_API_KEY
+      ? createGooglePlacesProvider({ apiKey: import.meta.env.VITE_GOOGLE_PLACES_API_KEY })
+      : createFixtureRestaurantProvider(), []);
   const restaurantSession = useMemo(() => createSession(restaurantProvider), [restaurantProvider]);
   const cuisineCandidates = homeState.mode === 'group' && groupEntries.length > 0
     ? buildGroupFoodCandidates(groupEntries, foodCatalog.foods)
@@ -139,7 +144,7 @@ export function App() {
       setRestaurantCandidates([]); setSelectedRestaurantIds([]); setMessage('店舗情報を取得できませんでした。設定と通信状態を確認してください'); return;
     }
     const candidates = restaurantSession.getCandidates();
-    setProviderNotice(restaurantProvider.kind === 'fixture' ? 'これは店舗検索の仮データです' : '店舗情報はGoogle Placesから取得しています');
+    setProviderNotice(restaurantProvider.kind === 'fixture' ? 'これは店舗検索の仮データです' : restaurantProvider.kind === 'remote' ? '店舗情報は検索サーバーから取得しています' : '店舗情報はGoogle Placesから取得しています');
     setRestaurantCandidates(candidates); setSelectedRestaurantIds(candidates.map((candidate) => candidate.id)); setExcludedRestaurantIds([]); setRestaurantResult(null); setMessage('');
     if (candidates.length === 0) setMessage('条件に合う店舗がありません');
   };

@@ -10,6 +10,7 @@ Home / Roulette Session
 Candidate Generator
   ↓
 RestaurantProvider
+  ├─ Remote server adapter (recommended; keeps provider keys server-side)
   ├─ Google Places adapter (live, requires configuration)
   └─ Fixture adapter (development/demo only)
 
