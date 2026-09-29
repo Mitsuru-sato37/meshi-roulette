@@ -118,4 +118,16 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: '岐阜タンメン 名古屋駅店を選ぶ' }));
     expect(screen.getByRole('heading', { name: '岐阜タンメン 名古屋駅店' })).toBeInTheDocument();
   });
+
+  it('registers group members and uses their weighted food candidates', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'みんなで' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'メンバー名' }), { target: { value: '太郎' } });
+    fireEvent.click(screen.getByRole('button', { name: 'メンバーを追加' }));
+
+    expect(screen.getByText('太郎')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    expect(screen.getByRole('heading', { name: '「ラーメン」' })).toBeInTheDocument();
+  });
 });

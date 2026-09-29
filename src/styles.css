@@ -51,6 +51,12 @@ h1 { max-width: 12em; margin: 0; font-size: clamp(2.2rem, 10vw, 4.5rem); line-he
 .condition-form select { min-height: 42px; border: 1px solid #e5d8d1; border-radius: 10px; padding: 0 10px; color: #312522; background: #fff; }
 .location-input { display: grid; gap: 6px; margin-top: 16px; color: #6e5951; font-size: 0.85rem; font-weight: 700; }
 .location-input input { min-height: 42px; border: 1px solid #e5d8d1; border-radius: 10px; padding: 0 10px; color: #312522; background: #fff; }
+.group-form { display: grid; gap: 10px; grid-template-columns: 1.2fr 1fr 0.6fr; }
+.group-form input, .group-form select { min-height: 42px; border: 1px solid #e5d8d1; border-radius: 10px; padding: 0 10px; color: #312522; background: #fff; }
+.group-form .secondary-button { grid-column: 1 / -1; }
+.group-list { display: grid; gap: 8px; margin-top: 16px; }
+.group-row { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; background: #f8f5f1; }
+.group-row span { flex: 1; }
 .checkbox-label { display: flex !important; grid-template-columns: auto 1fr; align-items: center; }
 .checkbox-label input { accent-color: #c8664d; }
 .section-heading { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 16px; }

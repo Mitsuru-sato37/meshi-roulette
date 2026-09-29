@@ -72,3 +72,11 @@ export type Brand = {
   name: string;
   storeIds: string[];
 };
+
+export type GroupEntry = {
+  id: string;
+  label: string;
+  type: 'food' | 'restaurant';
+  candidateIds: string[];
+  weight: number;
+};
