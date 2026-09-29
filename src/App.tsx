@@ -18,6 +18,7 @@ import { ConditionPanel } from './components/ConditionPanel';
 import { ConditionSummary } from './components/ConditionSummary';
 import { LocationPicker } from './components/LocationPicker';
 import { ModeSwitch } from './components/ModeSwitch';
+import { FoodPickerSheet } from './components/FoodPickerSheet';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -31,6 +32,7 @@ export function App() {
   const [homeState, setHomeState] = useState(createHomeSessionState);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showConditionPanel, setShowConditionPanel] = useState(false);
+  const [showFoodPicker, setShowFoodPicker] = useState(false);
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
   const restaurantSession = useMemo(() => createSession(createFixtureRestaurantProvider()), []);
@@ -102,10 +104,11 @@ export function App() {
       <p className="intro">決まっていることだけ指定して、残りはルーレットに任せよう。</p>
       <ConditionSummary
         state={homeState}
-        onFoodClick={() => document.getElementById('cuisine-heading')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+        onFoodClick={() => setShowFoodPicker((current) => !current)}
         onLocationClick={() => setShowLocationPicker((current) => !current)}
         onConditionsClick={() => setShowConditionPanel((current) => !current)}
       />
+      {showFoodPicker && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
       {showLocationPicker && <LocationPicker mode={homeState.location.mode} onChange={(mode, label) => setHomeState((current) => updateLocationMode(current, { mode, label }))} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => setHomeState((current) => updateConditions(current, patch))} />}
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
