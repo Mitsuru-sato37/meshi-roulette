@@ -170,8 +170,8 @@ export function App() {
     store.saveRestaurant(restaurantResult); setVersion((current) => current + 1); setMessage('行きたい店に保存しました');
   };
   const toggleRestaurantSelection = (id: string) => setSelectedRestaurantIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-  const drawSavedRestaurant = () => setSavedRouletteResult(savedRestaurants.length === 0 ? null : drawOne(savedRestaurants));
-  const rerollSavedRestaurant = () => setSavedRouletteResult(savedRestaurants.length === 0 ? null : drawOne(savedRestaurants));
+  const drawSavedRestaurant = (candidates: RestaurantCandidate[]) => setSavedRouletteResult(candidates.length === 0 ? null : drawOne(candidates));
+  const rerollSavedRestaurant = (candidates: RestaurantCandidate[]) => setSavedRouletteResult(candidates.length === 0 ? null : drawOne(candidates));
   const decideSavedRestaurant = () => { if (!savedRouletteResult) return; recordDecision({ type: 'restaurant', id: savedRouletteResult.id, label: savedRouletteResult.name, restaurantId: savedRouletteResult.id, sessionSnapshot: buildSessionSnapshot(savedRouletteResult.foodIds) }, store); setVersion((current) => current + 1); };
   const rerunHistory = (item: DecisionHistory) => {
     const snapshot = item.sessionSnapshot;

@@ -170,4 +170,16 @@ describe('meal roulette user flows', () => {
     expect(screen.getByDisplayValue('名古屋駅')).toBeInTheDocument();
     expect(screen.getByDisplayValue('栄駅')).toBeInTheDocument();
   });
+
+  it('offers map and navigation links for a restaurant result', async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));
+
+    expect(screen.getByRole('link', { name: '地図で見る' })).toHaveAttribute('href', expect.stringContaining('google.com/maps'));
+    expect(screen.getByRole('link', { name: 'ナビを開始' })).toHaveAttribute('href', expect.stringContaining('dir'));
+  });
 });
