@@ -157,4 +157,17 @@ describe('meal roulette user flows', () => {
 
     expect(screen.getByRole('button', { name: '何を食べる？ カレー' })).toBeInTheDocument();
   });
+
+  it('captures a route search with origin, destination, and detour limit', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '寄り道上限' }), { target: { value: '10' } });
+
+    expect(screen.getByDisplayValue('名古屋駅')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('栄駅')).toBeInTheDocument();
+  });
 });

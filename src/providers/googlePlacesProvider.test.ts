@@ -30,4 +30,19 @@ describe('google places provider', () => {
 
     expect(JSON.parse(requestBody).locationBias.circle.center).toEqual({ latitude: 35.17, longitude: 136.88 });
   });
+
+  it('includes route endpoints and detour limit in a route search request', async () => {
+    let requestBody = '';
+    const provider = createGooglePlacesProvider({
+      apiKey: 'test-key',
+      fetcher: async (_input, init) => { requestBody = String(init?.body); return new Response(JSON.stringify({ places: [] }), { status: 200 }); },
+    });
+
+    await provider.search({ foodIds: ['ramen'], route: { origin: '名古屋駅', destination: '栄駅', maxDetourMinutes: 10 } });
+
+    const body = JSON.parse(requestBody);
+    expect(body.textQuery).toContain('名古屋駅');
+    expect(body.textQuery).toContain('栄駅');
+    expect(body.route.maxDetourMinutes).toBe(10);
+  });
 });

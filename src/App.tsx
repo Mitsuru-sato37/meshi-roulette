@@ -5,7 +5,7 @@ import { recordDecision, type DecisionHistory } from './domain/history';
 import { drawOne } from './domain/roulette';
 import type { Food, RestaurantCandidate, CuisineSelection, GroupEntry } from './domain/types';
 import { createLocalStore, getBrowserStorage } from './application/persistence';
-import { createHomeSessionState, resetGeneratedResults, updateConditions, updateFoodSelection, updateLocationMode } from './application/homeSession';
+import { createHomeSessionState, resetGeneratedResults, updateConditions, updateFoodSelection, updateLocationMode, updateRoute } from './application/homeSession';
 import { createSession } from './application/session';
 import { createFixtureRestaurantProvider } from './providers/fixtureRestaurantProvider';
 import { createGooglePlacesProvider } from './providers/googlePlacesProvider';
@@ -120,6 +120,7 @@ export function App() {
       foodIds: [cuisineResult.id],
       locationLabel: homeState.location.label ?? undefined,
       location: { label: homeState.location.label, latitude: homeState.location.latitude, longitude: homeState.location.longitude },
+      route: homeState.location.route,
       brandIds: selectedBrandIds,
       excludeStoreIds: excludedStoreIds,
       conditions: {
@@ -213,7 +214,7 @@ export function App() {
       {homeState.mode === 'group' && <GroupPanel entries={groupEntries} foods={foodCatalog.foods} onChange={(entries) => { setGroupEntries(entries); clearGeneratedUi(); }} />}
       {showFoodPicker && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
       {showBrandPicker && <BrandPicker brands={fixtureBrands} stores={fixtureRestaurants} selectedBrandIds={selectedBrandIds} excludedStoreIds={excludedStoreIds} onToggleBrand={toggleBrand} onToggleExcludeStore={toggleExcludeStore} />}
-      {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} onUseCurrentLocation={useCurrentLocation} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
+      {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} route={homeState.location.route} onUseCurrentLocation={useCurrentLocation} onRouteChange={(route) => { setHomeState((current) => updateRoute(current, route)); clearGeneratedUi(); }} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
       {message && <p className="status-message" role="status">{message}</p>}

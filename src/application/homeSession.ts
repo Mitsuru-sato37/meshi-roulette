@@ -5,6 +5,7 @@ export type FoodTargetMode = 'solo' | 'group';
 export type LocationMode = 'auto' | 'current' | 'specified' | 'route';
 export type Transport = 'walk' | 'car' | 'bicycle' | 'transit';
 export type ParkingRequirement = 'unspecified' | 'required';
+export type RoutePlan = { origin: string; destination: string; maxDetourMinutes: number };
 
 export type HomeConditions = {
   budget: number | null;
@@ -20,7 +21,7 @@ export type HomeConditions = {
 export type HomeSessionState = {
   mode: FoodTargetMode;
   food: { include: string[]; exclude: string[] };
-  location: { mode: LocationMode; label: string | null; latitude?: number; longitude?: number };
+  location: { mode: LocationMode; label: string | null; latitude?: number; longitude?: number; route?: RoutePlan };
   conditions: HomeConditions;
   generatedFoodId: string | null;
   restaurantCandidates: Array<{ id: string }>;
@@ -85,6 +86,10 @@ export function updateLocationMode(
 
 export function updateConditions(state: HomeSessionState, patch: ConditionPatch): HomeSessionState {
   return resetGeneratedResults({ ...state, conditions: { ...state.conditions, ...patch } });
+}
+
+export function updateRoute(state: HomeSessionState, route: RoutePlan): HomeSessionState {
+  return resetGeneratedResults({ ...state, location: { ...state.location, mode: 'route', label: '道中で探す', route } });
 }
 
 function foodLabel(id: string): string {

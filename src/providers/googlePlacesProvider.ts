@@ -24,7 +24,9 @@ export function createGooglePlacesProvider(config: GooglePlacesConfig): Restaura
     async search(query: RestaurantQuery): Promise<RestaurantCandidate[]> {
       if (!config.apiKey) throw new Error('Google Places API key is not configured');
       const fetcher = config.fetcher ?? fetch;
-      const body: Record<string, unknown> = { textQuery: query.locationLabel ? `${query.locationLabel} ${query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ')}` : query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ') };
+      const routeLabel = query.route ? `${query.route.origin} から ${query.route.destination} の道中` : '';
+      const body: Record<string, unknown> = { textQuery: [query.locationLabel, routeLabel, query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ')].filter(Boolean).join(' ') };
+      if (query.route) body.route = query.route;
       if (query.location?.latitude != null && query.location.longitude != null) {
         body.locationBias = { circle: { center: { latitude: query.location.latitude, longitude: query.location.longitude }, radius: 5000 } };
       }
