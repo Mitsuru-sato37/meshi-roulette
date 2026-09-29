@@ -1,0 +1,44 @@
+export type Food = {
+  id: string;
+  label: string;
+  parentIds: string[];
+  children: string[];
+  searchTerms: string[];
+  aliases: string[];
+  tags: string[];
+};
+
+export type FoodGroup = {
+  id: string;
+  label: string;
+  children: string[];
+};
+
+export type FoodCatalog = {
+  groups: FoodGroup[];
+  foods: Food[];
+};
+
+export type CuisineSelection = {
+  include: string[];
+  exclude: string[];
+};
+
+export type CuisineCandidate = Food & { weight?: number };
+
+export type WeightedCandidate = { id?: string; weight?: number; [key: string]: unknown };
+
+export type RestaurantCandidate = {
+  id: string;
+  name: string;
+  foodIds: string[];
+  locationLabel: string;
+  travelSummary: string;
+  isOpen: boolean | null;
+  budgetLabel: string;
+};
+
+export type RestaurantQuery = {
+  foodIds: string[];
+  locationLabel?: string;
+};
