@@ -84,4 +84,17 @@ describe('meal roulette user flows', () => {
 
     expect(screen.queryByText('麺処ひなた')).not.toBeInTheDocument();
   });
+
+  it('clears generated results when a location condition changes', async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
+    await screen.findByRole('button', { name: '店舗ルーレットを回す' });
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '場所を指定' }));
+
+    expect(screen.queryByRole('button', { name: '店舗ルーレットを回す' })).not.toBeInTheDocument();
+  });
 });

@@ -107,6 +107,7 @@ export function summarizeConditions(state: HomeSessionState): string[] {
     ? `料理：${state.food.include.map(foodLabel).join('・')}`
     : '料理：おまかせ';
   const summary = [food, `場所：${locationLabel(state)}`];
+  if (state.food.exclude.length > 0) summary.push(`除外：${state.food.exclude.map(foodLabel).join('・')}`);
   if (state.conditions.transport && state.conditions.travelTime) {
     summary.push(`${transportLabel(state.conditions.transport)}${state.conditions.travelTime}分`);
   }

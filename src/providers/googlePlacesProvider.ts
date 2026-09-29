@@ -1,5 +1,6 @@
 import type { RestaurantCandidate, RestaurantQuery } from '../domain/types';
 import type { RestaurantProvider } from './restaurantProvider';
+import { foodCatalog } from '../domain/masterData';
 
 type GooglePlace = {
   id?: string;
@@ -26,7 +27,7 @@ export function createGooglePlacesProvider(config: GooglePlacesConfig): Restaura
       const response = await fetcher(config.endpoint ?? 'https://places.googleapis.com/v1/places:searchText', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': config.apiKey, 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.currentOpeningHours,places.priceLevel,places.location' },
-        body: JSON.stringify({ textQuery: query.locationLabel ? `${query.locationLabel} ${query.foodIds.join(' ')}` : query.foodIds.join(' ') }),
+        body: JSON.stringify({ textQuery: query.locationLabel ? `${query.locationLabel} ${query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ')}` : query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ') }),
       });
       if (!response.ok) throw new Error(`Google Places request failed: ${response.status}`);
       const data = await response.json() as GooglePlacesResponse;

@@ -42,6 +42,13 @@ describe('home session', () => {
     ]);
   });
 
+  it('shows excluded foods in the condition summary', () => {
+    let state = updateFoodSelection(createHomeSessionState(), 'ramen', 'include');
+    state = updateFoodSelection(state, 'ramen', 'exclude');
+
+    expect(summarizeConditions(state)).toContain('除外：ラーメン');
+  });
+
   it('clears generated results and manual candidate state when conditions change', () => {
     const state = {
       ...createHomeSessionState(),

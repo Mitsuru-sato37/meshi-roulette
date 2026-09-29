@@ -9,6 +9,7 @@ import { createHomeSessionState, updateConditions, updateFoodSelection, updateLo
 import { createSession } from './application/session';
 import { createFixtureRestaurantProvider } from './providers/fixtureRestaurantProvider';
 import { getProviderSearchResult } from './providers/providerStatus';
+import { createGooglePlacesProvider } from './providers/googlePlacesProvider';
 import { BottomNav, type AppTab } from './components/BottomNav';
 import { CandidateList } from './components/CandidateList';
 import { CuisinePicker } from './components/CuisinePicker';
@@ -37,11 +38,15 @@ export function App() {
   const [providerNotice, setProviderNotice] = useState('');
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
-  const restaurantProvider = useMemo(() => createFixtureRestaurantProvider(), []);
+  const restaurantProvider = useMemo(() => import.meta.env.VITE_GOOGLE_PLACES_API_KEY ? createGooglePlacesProvider({ apiKey: import.meta.env.VITE_GOOGLE_PLACES_API_KEY }) : createFixtureRestaurantProvider(), []);
   const restaurantSession = useMemo(() => createSession(restaurantProvider), [restaurantProvider]);
   const cuisineCandidates = buildCuisineCandidates(selection, foodCatalog);
   const history = store.getHistory();
   const savedRestaurants = store.getSavedRestaurants();
+
+  const clearGeneratedUi = () => {
+    setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setProviderNotice(''); setMessage('');
+  };
 
   const toggleInclude = (id: string) => {
     setHomeState((current) => updateFoodSelection(current, id, 'include'));
@@ -116,9 +121,9 @@ export function App() {
         onLocationClick={() => setShowLocationPicker((current) => !current)}
         onConditionsClick={() => setShowConditionPanel((current) => !current)}
       />
-      {showFoodPicker && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
-      {showLocationPicker && <LocationPicker mode={homeState.location.mode} onChange={(mode, label) => setHomeState((current) => updateLocationMode(current, { mode, label }))} />}
-      {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => setHomeState((current) => updateConditions(current, patch))} />}
+      {showFoodPicker && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
+      {showLocationPicker && <LocationPicker mode={homeState.location.mode} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
+      {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
       {message && <p className="status-message" role="status">{message}</p>}
       {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
