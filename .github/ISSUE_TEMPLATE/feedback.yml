@@ -1,0 +1,21 @@
+name: 気づき・改善メモ
+description: スマートフォンから、使っていて気づいたことを1文だけでも残せます
+title: "[Feedback] "
+labels:
+  - feedback
+body:
+  - type: textarea
+    id: feedback
+    attributes:
+      label: 気づいたこと
+      description: 短い一言だけでも大丈夫です。
+      placeholder: 例）ラーメンに油そばがない
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: スクリーンショット（任意）
+      description: 必要なら画像を貼り付けてください。
+    validations:
+      required: false
