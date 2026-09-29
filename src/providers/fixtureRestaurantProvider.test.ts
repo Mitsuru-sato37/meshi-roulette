@@ -16,4 +16,15 @@ describe('fixture restaurant provider', () => {
 
     expect(restaurants.map((restaurant) => restaurant.name)).toEqual(['岐阜タンメン 名古屋駅店']);
   });
+
+  it('filters candidates by budget, travel time, parking, takeout, and open status', async () => {
+    const provider = createFixtureRestaurantProvider();
+    const restaurants = await provider.search({
+      foodIds: ['ramen'],
+      brandIds: ['gifu-tanmen'],
+      conditions: { budgetMax: 1000, travelTimeMax: 6, parkingRequired: true, takeoutRequired: true, eatingTime: 'now' },
+    });
+
+    expect(restaurants.map((restaurant) => restaurant.name)).toEqual(['岐阜タンメン 名古屋駅店']);
+  });
 });

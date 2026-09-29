@@ -84,7 +84,20 @@ export function App() {
   };
   const findRestaurants = async () => {
     if (!cuisineResult) return;
-    const query = { foodIds: [cuisineResult.id], brandIds: selectedBrandIds, excludeStoreIds: excludedStoreIds };
+    const query = {
+      foodIds: [cuisineResult.id],
+      locationLabel: homeState.location.label ?? undefined,
+      brandIds: selectedBrandIds,
+      excludeStoreIds: excludedStoreIds,
+      conditions: {
+        budgetMax: homeState.conditions.budget,
+        transport: homeState.conditions.transport,
+        travelTimeMax: homeState.conditions.travelTime,
+        eatingTime: homeState.conditions.eatingTime,
+        parkingRequired: homeState.conditions.parking === 'required',
+        takeoutRequired: homeState.conditions.takeout,
+      },
+    };
     try {
       await restaurantSession.generate(query);
     } catch {

@@ -28,6 +28,8 @@ describe('meal roulette user flows', () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole('button', { name: 'カレー' }));
+    fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
+    fireEvent.change(screen.getByLabelText('食べる時間'), { target: { value: 'scheduled' } });
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
     fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));
@@ -52,6 +54,8 @@ describe('meal roulette user flows', () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole('button', { name: 'カレー' }));
+    fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
+    fireEvent.change(screen.getByLabelText('食べる時間'), { target: { value: 'scheduled' } });
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
     fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));

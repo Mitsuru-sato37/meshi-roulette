@@ -40,7 +40,21 @@ export type RestaurantCandidate = {
   travelSummary: string;
   isOpen: boolean | null;
   budgetLabel: string;
+  priceYen?: number;
+  travelMinutes?: number;
+  transportModes?: string[];
+  hasParking?: boolean | null;
+  supportsTakeout?: boolean | null;
   location?: { latitude?: number; longitude?: number };
+};
+
+export type RestaurantConditions = {
+  budgetMax?: number | null;
+  transport?: string | null;
+  travelTimeMax?: number | null;
+  eatingTime?: 'now' | 'scheduled';
+  parkingRequired?: boolean;
+  takeoutRequired?: boolean;
 };
 
 export type RestaurantQuery = {
@@ -49,6 +63,7 @@ export type RestaurantQuery = {
   brandIds?: string[];
   includeStoreIds?: string[];
   excludeStoreIds?: string[];
+  conditions?: RestaurantConditions;
 };
 
 export type Brand = {
