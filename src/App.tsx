@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { buildCuisineCandidates } from './domain/candidates';
 import { foodCatalog } from './domain/masterData';
-import { recordDecision } from './domain/history';
+import { recordDecision, type DecisionHistory } from './domain/history';
 import { drawOne } from './domain/roulette';
 import type { Food, RestaurantCandidate, CuisineSelection, GroupEntry } from './domain/types';
 import { createLocalStore, getBrowserStorage } from './application/persistence';
-import { createHomeSessionState, updateConditions, updateFoodSelection, updateLocationMode } from './application/homeSession';
+import { createHomeSessionState, resetGeneratedResults, updateConditions, updateFoodSelection, updateLocationMode } from './application/homeSession';
 import { createSession } from './application/session';
 import { createFixtureRestaurantProvider } from './providers/fixtureRestaurantProvider';
 import { createGooglePlacesProvider } from './providers/googlePlacesProvider';
@@ -32,6 +32,7 @@ export function App() {
   const [selection, setSelection] = useState<CuisineSelection>({ include: [], exclude: [] });
   const [cuisineResult, setCuisineResult] = useState<Food | null>(null);
   const [restaurantResult, setRestaurantResult] = useState<RestaurantCandidate | null>(null);
+  const [savedRouletteResult, setSavedRouletteResult] = useState<RestaurantCandidate | null>(null);
   const [restaurantCandidates, setRestaurantCandidates] = useState<RestaurantCandidate[]>([]);
   const [selectedRestaurantIds, setSelectedRestaurantIds] = useState<string[]>([]);
   const [excludedRestaurantIds, setExcludedRestaurantIds] = useState<string[]>([]);
@@ -154,6 +155,16 @@ export function App() {
     store.saveRestaurant(restaurantResult); setVersion((current) => current + 1); setMessage('行きたい店に保存しました');
   };
   const toggleRestaurantSelection = (id: string) => setSelectedRestaurantIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+  const drawSavedRestaurant = () => setSavedRouletteResult(savedRestaurants.length === 0 ? null : drawOne(savedRestaurants));
+  const rerollSavedRestaurant = () => setSavedRouletteResult(savedRestaurants.length === 0 ? null : drawOne(savedRestaurants));
+  const decideSavedRestaurant = () => { if (!savedRouletteResult) return; recordDecision({ type: 'restaurant', id: savedRouletteResult.id, label: savedRouletteResult.name, restaurantId: savedRouletteResult.id }, store); setVersion((current) => current + 1); };
+  const rerunHistory = (item: DecisionHistory) => {
+    if (item.type !== 'cuisine') { setMessage('店舗履歴の再実行には、保存した検索条件が必要です'); setActiveTab('home'); return; }
+    setSelection({ include: [item.id], exclude: [] });
+    setHomeState((current) => resetGeneratedResults({ ...current, food: { include: [item.id], exclude: [] } }));
+    setActiveTab('home');
+    setMessage('履歴から料理を再実行します');
+  };
 
   const renderHome = () => (
     <section className="home-screen" aria-labelledby="home-title">
@@ -187,8 +198,8 @@ export function App() {
   return (
     <main className="app-shell">
       {activeTab === 'home' && renderHome()}
-      {activeTab === 'saved' && <div className="home-screen"><SavedRestaurants restaurants={savedRestaurants} /></div>}
-      {activeTab === 'history' && <div className="home-screen"><HistoryList history={history} /></div>}
+      {activeTab === 'saved' && <div className="home-screen"><SavedRestaurants restaurants={savedRestaurants} result={savedRouletteResult} onRoulette={drawSavedRestaurant} onReroll={rerollSavedRestaurant} onDecision={decideSavedRestaurant} /></div>}
+      {activeTab === 'history' && <div className="home-screen"><HistoryList history={history} onRerun={rerunHistory} /></div>}
       <BottomNav activeTab={activeTab} onChange={setActiveTab} />
       {version > -1 && null}
     </main>

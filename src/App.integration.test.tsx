@@ -130,4 +130,31 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     expect(screen.getByRole('heading', { name: '「ラーメン」' })).toBeInTheDocument();
   });
+
+  it('runs a roulette using saved restaurants only', async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));
+    fireEvent.click(screen.getByRole('button', { name: '行きたい店に保存' }));
+    fireEvent.click(screen.getByRole('button', { name: '行きたい店' }));
+
+    expect(screen.getByRole('button', { name: '保存店舗でルーレットを回す' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '保存店舗でルーレットを回す' }));
+    expect(screen.getByText('保存店舗から選びました')).toBeInTheDocument();
+  });
+
+  it('can rerun a cuisine decision from history', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'カレー' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(screen.getByRole('button', { name: 'この料理に決定' }));
+    fireEvent.click(screen.getByRole('button', { name: '履歴' }));
+    fireEvent.click(screen.getByRole('button', { name: 'この料理を再実行' }));
+
+    expect(screen.getByRole('button', { name: '何を食べる？ カレー' })).toBeInTheDocument();
+  });
 });
