@@ -5,6 +5,7 @@ import { recordDecision } from './domain/history';
 import { drawOne } from './domain/roulette';
 import type { Food, RestaurantCandidate, CuisineSelection } from './domain/types';
 import { createLocalStore, getBrowserStorage } from './application/persistence';
+import { createHomeSessionState, updateConditions, updateFoodSelection, updateLocationMode } from './application/homeSession';
 import { createSession } from './application/session';
 import { createFixtureRestaurantProvider } from './providers/fixtureRestaurantProvider';
 import { BottomNav, type AppTab } from './components/BottomNav';
@@ -13,6 +14,10 @@ import { CuisinePicker } from './components/CuisinePicker';
 import { HistoryList } from './components/HistoryList';
 import { ResultCard } from './components/ResultCard';
 import { SavedRestaurants } from './components/SavedRestaurants';
+import { ConditionPanel } from './components/ConditionPanel';
+import { ConditionSummary } from './components/ConditionSummary';
+import { LocationPicker } from './components/LocationPicker';
+import { ModeSwitch } from './components/ModeSwitch';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -23,6 +28,9 @@ export function App() {
   const [selectedRestaurantIds, setSelectedRestaurantIds] = useState<string[]>([]);
   const [excludedRestaurantIds, setExcludedRestaurantIds] = useState<string[]>([]);
   const [message, setMessage] = useState('');
+  const [homeState, setHomeState] = useState(createHomeSessionState);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showConditionPanel, setShowConditionPanel] = useState(false);
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
   const restaurantSession = useMemo(() => createSession(createFixtureRestaurantProvider()), []);
@@ -31,10 +39,12 @@ export function App() {
   const savedRestaurants = store.getSavedRestaurants();
 
   const toggleInclude = (id: string) => {
+    setHomeState((current) => updateFoodSelection(current, id, 'include'));
     setSelection((current) => ({ ...current, include: current.include.includes(id) ? current.include.filter((item) => item !== id) : [...current.include, id] }));
     setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setMessage('');
   };
   const toggleExclude = (id: string) => {
+    setHomeState((current) => updateFoodSelection(current, id, 'exclude'));
     setSelection((current) => ({ ...current, exclude: current.exclude.includes(id) ? current.exclude.filter((item) => item !== id) : [...current.exclude, id] }));
     setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setMessage('');
   };
@@ -87,8 +97,17 @@ export function App() {
   const renderHome = () => (
     <section className="home-screen" aria-labelledby="home-title">
       <p className="eyebrow">ご飯ルーレット</p>
+      <ModeSwitch mode={homeState.mode} onChange={(mode) => setHomeState((current) => ({ ...current, mode }))} />
       <h1 id="home-title">今日のご飯、どうする？</h1>
       <p className="intro">決まっていることだけ指定して、残りはルーレットに任せよう。</p>
+      <ConditionSummary
+        state={homeState}
+        onFoodClick={() => document.getElementById('cuisine-heading')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+        onLocationClick={() => setShowLocationPicker((current) => !current)}
+        onConditionsClick={() => setShowConditionPanel((current) => !current)}
+      />
+      {showLocationPicker && <LocationPicker mode={homeState.location.mode} onChange={(mode, label) => setHomeState((current) => updateLocationMode(current, { mode, label }))} />}
+      {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => setHomeState((current) => updateConditions(current, patch))} />}
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
       {message && <p className="status-message" role="status">{message}</p>}
       <button className="primary-button" type="button" onClick={drawCuisine}>ルーレットを回す</button>

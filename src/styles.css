@@ -18,6 +18,10 @@ button { font: inherit; }
 
 .eyebrow { margin: 0 0 16px; color: #c8664d; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.14em; }
 
+.mode-switch { display: inline-flex; gap: 4px; margin-bottom: 24px; padding: 4px; border: 1px solid #eaded8; border-radius: 999px; background: #fffdfa; }
+.mode-switch button { border: 0; border-radius: 999px; padding: 8px 16px; color: #887974; background: transparent; cursor: pointer; }
+.mode-switch button[aria-pressed="true"] { color: #fffaf7; background: #c8664d; font-weight: 700; }
+
 h1 { max-width: 12em; margin: 0; font-size: clamp(2.2rem, 10vw, 4.5rem); line-height: 1.05; letter-spacing: -0.05em; }
 
 .intro { max-width: 28rem; margin: 24px 0 40px; color: #736561; line-height: 1.8; }
@@ -31,6 +35,22 @@ h1 { max-width: 12em; margin: 0; font-size: clamp(2.2rem, 10vw, 4.5rem); line-he
 .bottom-nav__item--active { color: #c8664d; font-weight: 700; }
 
 .panel, .result-card { margin: 28px 0; padding: 22px; border: 1px solid #eee3dd; border-radius: 22px; background: #fffdfa; }
+.condition-panel { display: grid; gap: 18px; margin-top: 28px; }
+.condition-row { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.condition-button { display: grid; gap: 8px; min-height: 78px; padding: 16px; border: 1px solid #e5d8d1; border-radius: 16px; color: #312522; background: #fff; text-align: left; cursor: pointer; }
+.condition-button span { color: #c8664d; font-size: 0.78rem; font-weight: 700; }
+.condition-button strong { font-size: 1.1rem; }
+.condition-more { justify-self: start; border: 0; padding: 0; color: #a04b39; background: transparent; cursor: pointer; }
+.condition-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.condition-chip { padding: 6px 10px; border-radius: 999px; color: #6e5951; background: #f6ede8; font-size: 0.78rem; }
+.provider-hint { margin: 0; }
+.picker-panel { margin-top: 12px; }
+.picker-options { display: flex; flex-wrap: wrap; gap: 10px; }
+.condition-form { display: grid; gap: 12px; }
+.condition-form label { display: grid; gap: 6px; color: #6e5951; font-size: 0.85rem; font-weight: 700; }
+.condition-form select { min-height: 42px; border: 1px solid #e5d8d1; border-radius: 10px; padding: 0 10px; color: #312522; background: #fff; }
+.checkbox-label { display: flex !important; grid-template-columns: auto 1fr; align-items: center; }
+.checkbox-label input { accent-color: #c8664d; }
 .section-heading { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 16px; }
 .section-heading h2, .result-card h2 { margin: 0; font-size: 1.5rem; }
 .muted, .candidate-row small, .simple-list small { display: block; color: #887974; font-size: 0.8rem; }
@@ -55,4 +75,5 @@ h1 { max-width: 12em; margin: 0; font-size: clamp(2.2rem, 10vw, 4.5rem); line-he
 @media (min-width: 640px) {
   .home-screen { padding-top: 72px; }
   .chip-grid { gap: 12px; }
+  .condition-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
