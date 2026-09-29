@@ -4,6 +4,7 @@ import type { RestaurantProvider } from './restaurantProvider';
 
 export function createFixtureRestaurantProvider(): RestaurantProvider {
   return {
+    kind: 'fixture',
     async search(query): Promise<RestaurantCandidate[]> {
       const requested = new Set(query.foodIds);
       return fixtureRestaurants.filter((restaurant) => restaurant.foodIds.some((foodId) => requested.has(foodId)));

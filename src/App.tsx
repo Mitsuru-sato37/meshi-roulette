@@ -8,6 +8,7 @@ import { createLocalStore, getBrowserStorage } from './application/persistence';
 import { createHomeSessionState, updateConditions, updateFoodSelection, updateLocationMode } from './application/homeSession';
 import { createSession } from './application/session';
 import { createFixtureRestaurantProvider } from './providers/fixtureRestaurantProvider';
+import { getProviderSearchResult } from './providers/providerStatus';
 import { BottomNav, type AppTab } from './components/BottomNav';
 import { CandidateList } from './components/CandidateList';
 import { CuisinePicker } from './components/CuisinePicker';
@@ -33,9 +34,11 @@ export function App() {
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showConditionPanel, setShowConditionPanel] = useState(false);
   const [showFoodPicker, setShowFoodPicker] = useState(false);
+  const [providerNotice, setProviderNotice] = useState('');
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
-  const restaurantSession = useMemo(() => createSession(createFixtureRestaurantProvider()), []);
+  const restaurantProvider = useMemo(() => createFixtureRestaurantProvider(), []);
+  const restaurantSession = useMemo(() => createSession(restaurantProvider), [restaurantProvider]);
   const cuisineCandidates = buildCuisineCandidates(selection, foodCatalog);
   const history = store.getHistory();
   const savedRestaurants = store.getSavedRestaurants();
@@ -63,6 +66,11 @@ export function App() {
   };
   const findRestaurants = async () => {
     if (!cuisineResult) return;
+    const providerResult = await getProviderSearchResult(restaurantProvider, { foodIds: [cuisineResult.id] });
+    setProviderNotice(providerResult.message);
+    if (providerResult.status === 'unavailable') {
+      setRestaurantCandidates([]); setSelectedRestaurantIds([]); setMessage(providerResult.message); return;
+    }
     await restaurantSession.generate({ foodIds: [cuisineResult.id] });
     const candidates = restaurantSession.getCandidates();
     setRestaurantCandidates(candidates); setSelectedRestaurantIds(candidates.map((candidate) => candidate.id)); setExcludedRestaurantIds([]); setRestaurantResult(null); setMessage('');
@@ -113,6 +121,7 @@ export function App() {
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => setHomeState((current) => updateConditions(current, patch))} />}
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
       {message && <p className="status-message" role="status">{message}</p>}
+      {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
       <button className="primary-button" type="button" onClick={drawCuisine}>ルーレットを回す</button>
       {cuisineResult && <ResultCard cuisine={cuisineResult} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
       {restaurantCandidates.length > 0 && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
