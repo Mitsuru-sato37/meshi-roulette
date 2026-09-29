@@ -24,10 +24,14 @@ export function createGooglePlacesProvider(config: GooglePlacesConfig): Restaura
     async search(query: RestaurantQuery): Promise<RestaurantCandidate[]> {
       if (!config.apiKey) throw new Error('Google Places API key is not configured');
       const fetcher = config.fetcher ?? fetch;
+      const body: Record<string, unknown> = { textQuery: query.locationLabel ? `${query.locationLabel} ${query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ')}` : query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ') };
+      if (query.location?.latitude != null && query.location.longitude != null) {
+        body.locationBias = { circle: { center: { latitude: query.location.latitude, longitude: query.location.longitude }, radius: 5000 } };
+      }
       const response = await fetcher(config.endpoint ?? 'https://places.googleapis.com/v1/places:searchText', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': config.apiKey, 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.currentOpeningHours,places.priceLevel,places.location' },
-        body: JSON.stringify({ textQuery: query.locationLabel ? `${query.locationLabel} ${query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ')}` : query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' ') }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error(`Google Places request failed: ${response.status}`);
       const data = await response.json() as GooglePlacesResponse;

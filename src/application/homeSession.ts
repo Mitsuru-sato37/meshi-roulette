@@ -1,4 +1,5 @@
 import { foodCatalog } from '../domain/masterData';
+import type { Coordinates } from './location';
 
 export type FoodTargetMode = 'solo' | 'group';
 export type LocationMode = 'auto' | 'current' | 'specified' | 'route';
@@ -19,7 +20,7 @@ export type HomeConditions = {
 export type HomeSessionState = {
   mode: FoodTargetMode;
   food: { include: string[]; exclude: string[] };
-  location: { mode: LocationMode; label: string | null };
+  location: { mode: LocationMode; label: string | null; latitude?: number; longitude?: number };
   conditions: HomeConditions;
   generatedFoodId: string | null;
   restaurantCandidates: Array<{ id: string }>;
@@ -77,9 +78,9 @@ export function updateFoodSelection(
 
 export function updateLocationMode(
   state: HomeSessionState,
-  location: { mode: LocationMode; label?: string | null },
+  location: { mode: LocationMode; label?: string | null; coordinates?: Coordinates },
 ): HomeSessionState {
-  return resetGeneratedResults({ ...state, location: { mode: location.mode, label: location.label ?? null } });
+  return resetGeneratedResults({ ...state, location: { mode: location.mode, label: location.label ?? null, ...location.coordinates } });
 }
 
 export function updateConditions(state: HomeSessionState, patch: ConditionPatch): HomeSessionState {

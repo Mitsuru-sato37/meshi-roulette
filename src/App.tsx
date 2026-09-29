@@ -23,6 +23,7 @@ import { ModeSwitch } from './components/ModeSwitch';
 import { FoodPickerSheet } from './components/FoodPickerSheet';
 import { BrandPicker } from './components/BrandPicker';
 import { BranchPicker } from './components/BranchPicker';
+import { requestCurrentLocation } from './application/location';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -71,6 +72,16 @@ export function App() {
     setExcludedStoreIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
     clearGeneratedUi();
   };
+  const useCurrentLocation = async () => {
+    try {
+      const coordinates = await requestCurrentLocation();
+      setHomeState((current) => updateLocationMode(current, { mode: 'current', label: '現在地の近く', coordinates }));
+      clearGeneratedUi();
+      setMessage('現在地を取得しました');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '現在地を取得できませんでした。場所を手入力してください');
+    }
+  };
   const drawCuisine = () => {
     if (cuisineCandidates.length === 0) { setCuisineResult(null); setMessage('条件に合う料理がありません'); return; }
     setMessage(cuisineCandidates.length === 1 ? '候補は1件です。ルーレット演出は行いません。' : '');
@@ -87,6 +98,7 @@ export function App() {
     const query = {
       foodIds: [cuisineResult.id],
       locationLabel: homeState.location.label ?? undefined,
+      location: { label: homeState.location.label, latitude: homeState.location.latitude, longitude: homeState.location.longitude },
       brandIds: selectedBrandIds,
       excludeStoreIds: excludedStoreIds,
       conditions: {
@@ -152,7 +164,7 @@ export function App() {
       <button className="condition-more" type="button" onClick={() => setShowBrandPicker((current) => !current)}>チェーン・店舗を指定</button>
       {showFoodPicker && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
       {showBrandPicker && <BrandPicker brands={fixtureBrands} stores={fixtureRestaurants} selectedBrandIds={selectedBrandIds} excludedStoreIds={excludedStoreIds} onToggleBrand={toggleBrand} onToggleExcludeStore={toggleExcludeStore} />}
-      {showLocationPicker && <LocationPicker mode={homeState.location.mode} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
+      {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} onUseCurrentLocation={useCurrentLocation} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
       {message && <p className="status-message" role="status">{message}</p>}

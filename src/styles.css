@@ -49,6 +49,8 @@ h1 { max-width: 12em; margin: 0; font-size: clamp(2.2rem, 10vw, 4.5rem); line-he
 .condition-form { display: grid; gap: 12px; }
 .condition-form label { display: grid; gap: 6px; color: #6e5951; font-size: 0.85rem; font-weight: 700; }
 .condition-form select { min-height: 42px; border: 1px solid #e5d8d1; border-radius: 10px; padding: 0 10px; color: #312522; background: #fff; }
+.location-input { display: grid; gap: 6px; margin-top: 16px; color: #6e5951; font-size: 0.85rem; font-weight: 700; }
+.location-input input { min-height: 42px; border: 1px solid #e5d8d1; border-radius: 10px; padding: 0 10px; color: #312522; background: #fff; }
 .checkbox-label { display: flex !important; grid-template-columns: auto 1fr; align-items: center; }
 .checkbox-label input { accent-color: #c8664d; }
 .section-heading { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 16px; }

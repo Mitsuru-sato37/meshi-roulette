@@ -64,6 +64,7 @@ export type RestaurantQuery = {
   includeStoreIds?: string[];
   excludeStoreIds?: string[];
   conditions?: RestaurantConditions;
+  location?: { label?: string | null; latitude?: number; longitude?: number };
 };
 
 export type Brand = {
