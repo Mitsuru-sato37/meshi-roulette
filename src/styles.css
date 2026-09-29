@@ -66,6 +66,9 @@ h1 { max-width: 12em; margin: 0; font-size: clamp(2.2rem, 10vw, 4.5rem); line-he
 .text-button { border: 0; background: transparent; }
 .candidate-list, .simple-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .candidate-row, .simple-list li { display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: 14px; background: #f8f5f1; }
+.branch-option { display: grid; gap: 6px; width: 100%; padding: 14px; border: 1px solid #e5d8d1; border-radius: 14px; color: #312522; background: #fff; text-align: left; cursor: pointer; }
+.branch-option small { color: #887974; }
+.brand-stores { display: grid; gap: 8px; margin-top: 18px; }
 .candidate-row span, .simple-list li { flex: 1; }
 .candidate-row--excluded { opacity: 0.5; }
 .simple-list li { flex-direction: column; align-items: flex-start; }

@@ -8,8 +8,8 @@ import { createLocalStore, getBrowserStorage } from './application/persistence';
 import { createHomeSessionState, updateConditions, updateFoodSelection, updateLocationMode } from './application/homeSession';
 import { createSession } from './application/session';
 import { createFixtureRestaurantProvider } from './providers/fixtureRestaurantProvider';
-import { getProviderSearchResult } from './providers/providerStatus';
 import { createGooglePlacesProvider } from './providers/googlePlacesProvider';
+import { fixtureBrands, fixtureRestaurants } from './providers/fixtureRestaurants';
 import { BottomNav, type AppTab } from './components/BottomNav';
 import { CandidateList } from './components/CandidateList';
 import { CuisinePicker } from './components/CuisinePicker';
@@ -21,6 +21,8 @@ import { ConditionSummary } from './components/ConditionSummary';
 import { LocationPicker } from './components/LocationPicker';
 import { ModeSwitch } from './components/ModeSwitch';
 import { FoodPickerSheet } from './components/FoodPickerSheet';
+import { BrandPicker } from './components/BrandPicker';
+import { BranchPicker } from './components/BranchPicker';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -35,6 +37,9 @@ export function App() {
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showConditionPanel, setShowConditionPanel] = useState(false);
   const [showFoodPicker, setShowFoodPicker] = useState(false);
+  const [showBrandPicker, setShowBrandPicker] = useState(false);
+  const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
+  const [excludedStoreIds, setExcludedStoreIds] = useState<string[]>([]);
   const [providerNotice, setProviderNotice] = useState('');
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
@@ -58,6 +63,14 @@ export function App() {
     setSelection((current) => ({ ...current, exclude: current.exclude.includes(id) ? current.exclude.filter((item) => item !== id) : [...current.exclude, id] }));
     setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setMessage('');
   };
+  const toggleBrand = (id: string) => {
+    setSelectedBrandIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+    clearGeneratedUi();
+  };
+  const toggleExcludeStore = (id: string) => {
+    setExcludedStoreIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+    clearGeneratedUi();
+  };
   const drawCuisine = () => {
     if (cuisineCandidates.length === 0) { setCuisineResult(null); setMessage('条件に合う料理がありません'); return; }
     setMessage(cuisineCandidates.length === 1 ? '候補は1件です。ルーレット演出は行いません。' : '');
@@ -71,13 +84,15 @@ export function App() {
   };
   const findRestaurants = async () => {
     if (!cuisineResult) return;
-    const providerResult = await getProviderSearchResult(restaurantProvider, { foodIds: [cuisineResult.id] });
-    setProviderNotice(providerResult.message);
-    if (providerResult.status === 'unavailable') {
-      setRestaurantCandidates([]); setSelectedRestaurantIds([]); setMessage(providerResult.message); return;
+    const query = { foodIds: [cuisineResult.id], brandIds: selectedBrandIds, excludeStoreIds: excludedStoreIds };
+    try {
+      await restaurantSession.generate(query);
+    } catch {
+      setProviderNotice('店舗情報を取得できませんでした。設定と通信状態を確認してください');
+      setRestaurantCandidates([]); setSelectedRestaurantIds([]); setMessage('店舗情報を取得できませんでした。設定と通信状態を確認してください'); return;
     }
-    await restaurantSession.generate({ foodIds: [cuisineResult.id] });
     const candidates = restaurantSession.getCandidates();
+    setProviderNotice(restaurantProvider.kind === 'fixture' ? 'これは店舗検索の仮データです' : '店舗情報はGoogle Placesから取得しています');
     setRestaurantCandidates(candidates); setSelectedRestaurantIds(candidates.map((candidate) => candidate.id)); setExcludedRestaurantIds([]); setRestaurantResult(null); setMessage('');
     if (candidates.length === 0) setMessage('条件に合う店舗がありません');
   };
@@ -121,7 +136,9 @@ export function App() {
         onLocationClick={() => setShowLocationPicker((current) => !current)}
         onConditionsClick={() => setShowConditionPanel((current) => !current)}
       />
+      <button className="condition-more" type="button" onClick={() => setShowBrandPicker((current) => !current)}>チェーン・店舗を指定</button>
       {showFoodPicker && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
+      {showBrandPicker && <BrandPicker brands={fixtureBrands} stores={fixtureRestaurants} selectedBrandIds={selectedBrandIds} excludedStoreIds={excludedStoreIds} onToggleBrand={toggleBrand} onToggleExcludeStore={toggleExcludeStore} />}
       {showLocationPicker && <LocationPicker mode={homeState.location.mode} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
@@ -129,7 +146,8 @@ export function App() {
       {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
       <button className="primary-button" type="button" onClick={drawCuisine}>ルーレットを回す</button>
       {cuisineResult && <ResultCard cuisine={cuisineResult} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
-      {restaurantCandidates.length > 0 && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
+      {restaurantCandidates.length > 0 && restaurantCandidates.some((candidate) => candidate.brandId) && <BranchPicker branches={restaurantCandidates} onSelect={(branch) => { setRestaurantResult(branch); setMessage('支店を選択しました'); }} />}
+      {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
       {restaurantResult && <ResultCard restaurant={restaurantResult} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
     </section>
   );

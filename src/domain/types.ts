@@ -30,6 +30,8 @@ export type WeightedCandidate = { id?: string; weight?: number; [key: string]: u
 
 export type RestaurantCandidate = {
   id: string;
+  brandId?: string;
+  brandName?: string;
   provider?: string;
   providerPlaceId?: string;
   name: string;
@@ -44,4 +46,13 @@ export type RestaurantCandidate = {
 export type RestaurantQuery = {
   foodIds: string[];
   locationLabel?: string;
+  brandIds?: string[];
+  includeStoreIds?: string[];
+  excludeStoreIds?: string[];
+};
+
+export type Brand = {
+  id: string;
+  name: string;
+  storeIds: string[];
 };

@@ -97,4 +97,21 @@ describe('meal roulette user flows', () => {
 
     expect(screen.queryByRole('button', { name: '店舗ルーレットを回す' })).not.toBeInTheDocument();
   });
+
+  it('lets the user choose a chain and then select a branch directly', async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
+    fireEvent.click(screen.getByRole('button', { name: 'チェーン・店舗を指定' }));
+    fireEvent.click(screen.getByRole('button', { name: '岐阜タンメン' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
+
+    expect(await screen.findByRole('heading', { name: '利用可能な支店' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '岐阜タンメン 名古屋駅店を選ぶ' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '店舗ルーレットを回す' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '岐阜タンメン 名古屋駅店を選ぶ' }));
+    expect(screen.getByRole('heading', { name: '岐阜タンメン 名古屋駅店' })).toBeInTheDocument();
+  });
 });
