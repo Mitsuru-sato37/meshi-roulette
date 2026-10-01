@@ -127,6 +127,7 @@ h1 em { color: var(--accent); font-family: 'Noto Serif JP', serif; font-style: n
 .roulette-reveal__label { min-height: 1.35em; color: var(--paper); font-size: clamp(1.35rem, 5vw, 2rem); font-weight: 800; letter-spacing: -.06em; animation: roulette-pulse .16s ease-out; }
 .roulette-reveal__track { position: relative; display: block; height: 3px; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / 14%); }
 .roulette-reveal__track span { display: block; width: 35%; height: 100%; border-radius: inherit; background: var(--lime); animation: roulette-track 1s cubic-bezier(.2,.8,.2,1) infinite; }
+.result-card__final--hidden { visibility: hidden; height: 0 !important; min-height: 0 !important; margin: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; border: 0 !important; overflow: hidden; opacity: 0; pointer-events: none; }
 @keyframes roulette-pulse { from { opacity: .45; transform: translateY(3px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes roulette-track { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
 @media (prefers-reduced-motion: reduce) { .roulette-reveal__label, .roulette-reveal__track span { animation: none; } }
