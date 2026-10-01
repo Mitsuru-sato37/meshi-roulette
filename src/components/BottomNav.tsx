@@ -6,12 +6,12 @@ type BottomNavProps = {
 };
 
 export function BottomNav({ activeTab, onChange }: BottomNavProps) {
-  const items: Array<[AppTab, string]> = [['home', 'ホーム'], ['saved', '行きたい店'], ['history', '履歴']];
+  const items: Array<[AppTab, string, string]> = [['home', 'ホーム', '⌂'], ['saved', '行きたい店', '♡'], ['history', '履歴', '◷']];
   return (
     <nav className="bottom-nav" aria-label="メインナビゲーション">
-      {items.map(([tab, label]) => (
+      {items.map(([tab, label, icon]) => (
         <button key={tab} className={`bottom-nav__item${activeTab === tab ? ' bottom-nav__item--active' : ''}`} type="button" onClick={() => onChange(tab)}>
-          {label}
+          <span className="nav-icon" aria-hidden="true">{icon}</span><span>{label}</span>
         </button>
       ))}
     </nav>

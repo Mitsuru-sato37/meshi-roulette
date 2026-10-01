@@ -205,10 +205,18 @@ export function App() {
 
   const renderHome = () => (
     <section className="home-screen" aria-labelledby="home-title">
-      <p className="eyebrow">ご飯ルーレット</p>
-      <ModeSwitch mode={homeState.mode} onChange={(mode) => { setHomeState((current) => ({ ...current, mode })); clearGeneratedUi(); }} />
-      <h1 id="home-title">今日のご飯、どうする？</h1>
-      <p className="intro">決まっていることだけ指定して、残りはルーレットに任せよう。</p>
+      <div className="hero-topline">
+        <p className="eyebrow">ご飯ルーレット <span className="eyebrow-dot" aria-hidden="true" /></p>
+        <span className="hero-index" aria-hidden="true">01 / 03</span>
+      </div>
+      <div className="hero-copy">
+        <div>
+          <ModeSwitch mode={homeState.mode} onChange={(mode) => { setHomeState((current) => ({ ...current, mode })); clearGeneratedUi(); }} />
+          <h1 id="home-title">今日のご飯、<em>どうする？</em></h1>
+          <p className="intro">決まっていることだけ指定して、残りはルーレットに任せよう。</p>
+        </div>
+        <div className="hero-orbit" aria-hidden="true"><span>?</span><i /></div>
+      </div>
       <ConditionSummary
         state={homeState}
         onFoodClick={() => setShowFoodPicker((current) => !current)}
@@ -224,7 +232,7 @@ export function App() {
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
       {message && <p className="status-message" role="status">{message}</p>}
       {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
-      <button className="primary-button" type="button" onClick={drawCuisine}>ルーレットを回す</button>
+      <button className="primary-button primary-button--hero" type="button" onClick={drawCuisine}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
       {cuisineResult && <ResultCard cuisine={cuisineResult} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
       {restaurantCandidates.length > 0 && restaurantCandidates.some((candidate) => candidate.brandId) && <BranchPicker branches={restaurantCandidates} onSelect={(branch) => { setRestaurantResult(branch); setMessage('支店を選択しました'); }} />}
       {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}

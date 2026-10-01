@@ -3,6 +3,17 @@
 Status: Current handoff
 Last updated: 2026-10-01
 
+## Current visual pass
+
+The MVP interface received a visual-quality pass aligned with the product rules:
+
+- editorial-style home hero with responsive layout;
+- stronger condition hierarchy and a single primary roulette CTA;
+- dark result stage with reduced-motion support and clearer next actions;
+- consistent saved/history screens and active bottom navigation treatment.
+
+No roulette probability, candidate generation, confirmation, or persistence behavior was changed.
+
 ## Current state
 
 The MVP specification and master data are already present. The application can run with fixture restaurant data when external restaurant-search configuration is not supplied.
