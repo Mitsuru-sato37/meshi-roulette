@@ -217,8 +217,9 @@ export function App() {
         </div>
         <div className="ticket-hero__copy">
           <ModeSwitch mode={homeState.mode} onChange={(mode) => { setHomeState((current) => ({ ...current, mode })); clearGeneratedUi(); }} />
-          <h1 id="home-title" aria-label="今日のご飯、どうする？"><span aria-hidden="true">今日のご飯、</span><em aria-hidden="true">どうする？</em></h1>
+          <h1 id="home-title" aria-label="今日のご飯、どうする？"><span aria-hidden="true">今日の</span><span aria-hidden="true">ご飯、</span><em aria-hidden="true">どうする？</em></h1>
           <p className="intro">決まっていることだけ指定して、あとは一枚のチケットに任せよう。</p>
+          <button className="primary-button primary-button--hero" type="button" onClick={drawCuisine}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
         </div>
       </div>
       <ConditionSummary
@@ -236,7 +237,6 @@ export function App() {
       <CuisinePicker foods={foodCatalog.foods.filter((food) => food.parentIds.length === 0)} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
       {message && <p className="status-message" role="status">{message}</p>}
       {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
-      <button className="primary-button primary-button--hero" type="button" onClick={drawCuisine}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
       {cuisineResult && <ResultCard cuisine={cuisineResult} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
       {restaurantCandidates.length > 0 && restaurantCandidates.some((candidate) => candidate.brandId) && <BranchPicker branches={restaurantCandidates} onSelect={(branch) => { setRestaurantResult(branch); setMessage('支店を選択しました'); }} />}
       {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}

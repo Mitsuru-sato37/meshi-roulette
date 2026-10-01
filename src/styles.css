@@ -272,3 +272,56 @@ body { background-image: none; }
   .ticket-hero h1 { max-width: 8em; font-size: 2.45rem; }
   .ticket-hero .intro { max-width: 18rem; }
 }
+
+/* Reference pass: make the real app follow the mobile ticket composition. */
+.home-screen { width: min(100%, 560px); padding-right: 18px; padding-left: 18px; }
+.hero-topline { margin-bottom: 16px; }
+.ticket-hero { display: block; min-height: 510px; margin-bottom: 18px; padding: 22px 22px 24px; border-radius: 20px; box-shadow: 6px 6px 0 var(--ink); }
+.ticket-hero__art { position: absolute; inset: 22px 22px 22px; display: block; min-height: 0; width: auto; height: auto; border-right: 0; pointer-events: none; }
+.ticket-hero__art::before { display: none; }
+.ticket-hero__art-label { position: absolute; top: 0; left: 0; font-size: .54rem; }
+.ticket-hero__art-number { display: none; }
+.ticket-hero__art-slash { display: none; }
+.ticket-hero__copy { display: flex; min-height: 458px; flex-direction: column; justify-content: flex-start; padding-top: 52px; }
+.ticket-hero__copy::after { position: absolute; bottom: 80px; left: 0; width: 68px; height: 23px; background: var(--lime); content: ''; transform: skewX(-28deg); }
+.ticket-hero .mode-switch { align-self: flex-start; margin-bottom: 28px; }
+.ticket-hero h1 { display: grid; gap: 0; max-width: 7em; font-size: clamp(3rem, 13vw, 5.2rem); line-height: .9; letter-spacing: -.13em; }
+.ticket-hero h1 span, .ticket-hero h1 em { display: block; font-size: inherit; letter-spacing: inherit; }
+.ticket-hero h1 em::after { width: .42em; height: .16em; margin-left: .1em; }
+.ticket-hero .intro { max-width: 18rem; margin-top: 22px; font-size: .7rem; line-height: 1.65; }
+.ticket-hero .primary-button--hero { margin-top: auto; min-height: 58px; }
+
+.condition-panel { margin-top: 0; padding: 18px; border-radius: 18px; }
+.condition-row { gap: 9px; }
+.condition-button { min-height: 76px; padding: 14px; border-radius: 13px; }
+.condition-button strong { font-size: 1rem; }
+.condition-more { font-size: .72rem; }
+.provider-hint { font-size: .63rem; }
+
+.panel:has(.chip-grid) { margin-top: 18px; padding: 20px 18px; border-radius: 18px; }
+.panel:has(.chip-grid) .section-heading { align-items: end; margin-bottom: 15px; }
+.panel:has(.chip-grid) .section-heading h2 { font-size: 1.6rem; }
+.chip-grid { display: grid; gap: 8px; }
+.chip-group { display: grid; gap: 6px; counter-increment: food-row; }
+.chip-grid { counter-reset: food-row; }
+.choice-chip { display: flex; width: 100%; min-height: 58px; align-items: center; justify-content: flex-start; gap: 14px; border-radius: 13px; padding: 0 16px; font-size: .9rem; text-align: left; }
+.choice-chip::before { min-width: 1.3rem; color: #999994; content: counter(food-row, decimal-leading-zero); font-family: 'DM Mono', monospace; font-size: .58rem; font-weight: 700; }
+.choice-chip::after { margin-left: auto; }
+.choice-chip--selected { color: var(--paper); background: var(--accent); box-shadow: 4px 4px 0 var(--ink); }
+.choice-chip--selected::before { color: rgb(255 255 255 / 70%); }
+.exclude-chip { justify-self: end; margin-right: 5px; }
+
+.primary-button--hero { box-shadow: 5px 5px 0 var(--ink); }
+.result-card { margin-top: 18px; padding: 22px 20px 20px; border-radius: 18px; box-shadow: 6px 6px 0 var(--accent); }
+.result-card h2 { max-width: 7em; font-size: clamp(2.8rem, 13vw, 5rem); line-height: .9; letter-spacing: -.11em; }
+.result-card .action-stack { gap: 8px; }
+.result-card .primary-button, .result-card .secondary-button { min-height: 50px; border-radius: 11px; }
+.bottom-nav { padding-right: 12px; padding-left: 12px; }
+
+@media (min-width: 640px) {
+  .home-screen { padding-right: 24px; padding-left: 24px; }
+  .ticket-hero { min-height: 560px; padding: 26px 28px 28px; }
+  .ticket-hero__art { inset: 26px 28px 28px; }
+  .ticket-hero__art-slash { display: none; }
+  .ticket-hero__copy { min-height: 500px; padding-top: 62px; }
+}
