@@ -2,3 +2,14 @@ node_modules/
 dist/
 *.tsbuildinfo
 .superpowers/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS local files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
