@@ -61,6 +61,6 @@ Before stopping a meaningful Codex session, update this file with:
 ## Latest handoff
 
 - Active branch: `codex/award-level-ui`.
-- Completed: replaced the nostalgic paper-ticket styling with a mobile-first ticket composition, stacked ticket-like cuisine rows, and a matching dark result stage; verified the home, selection, and result states in the local browser.
+- Completed: replaced the nostalgic paper-ticket styling with a mobile-first ticket composition, grouped cuisine navigation backed by the master-data hierarchy, stacked ticket-like cuisine rows, and a matching dark result stage; verified the home, grouped selection, and result states in the local browser.
 - Verification: `npm test -- --run` (58 tests passed), `npm run build` (passed).
 - Remaining: continue visual refinement if the next review identifies spacing or imagery differences from the reference.
