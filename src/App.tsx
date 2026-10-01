@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { buildCuisineCandidates } from './domain/candidates';
 import { foodCatalog } from './domain/masterData';
 import { recordDecision, type DecisionHistory } from './domain/history';
@@ -27,6 +27,9 @@ import { BranchPicker } from './components/BranchPicker';
 import { GroupPanel } from './components/GroupPanel';
 import { buildGroupFoodCandidates, buildGroupRestaurantCandidates, createManualRestaurantCandidate } from './domain/groupCandidates';
 import { requestCurrentLocation } from './application/location';
+import type { RouletteRevealConfig } from './components/RouletteReveal';
+
+type ActiveReveal = RouletteRevealConfig & { kind: 'cuisine' | 'restaurant' };
 
 export function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -48,6 +51,8 @@ export function App() {
   const [groupEntries, setGroupEntries] = useState<GroupEntry[]>([]);
   const [groupTarget, setGroupTarget] = useState<GroupTarget>('food');
   const [providerNotice, setProviderNotice] = useState('');
+  const [activeReveal, setActiveReveal] = useState<ActiveReveal | null>(null);
+  const [savedReveal, setSavedReveal] = useState<RouletteRevealConfig | null>(null);
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
   const restaurantProvider = useMemo(() => import.meta.env.VITE_RESTAURANT_API_URL
@@ -82,8 +87,10 @@ export function App() {
   });
 
   const clearGeneratedUi = () => {
-    setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setProviderNotice(''); setMessage('');
+    setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setProviderNotice(''); setMessage(''); setActiveReveal(null);
   };
+  const finishActiveReveal = useCallback(() => setActiveReveal(null), []);
+  const finishSavedReveal = useCallback(() => setSavedReveal(null), []);
 
   const toggleInclude = (id: string) => {
     setHomeState((current) => updateFoodSelection(current, id, 'include'));
@@ -116,9 +123,11 @@ export function App() {
   const drawCuisine = () => {
     if (homeState.mode === 'group' && groupTarget === 'food' && groupEntries.length === 0) { setCuisineResult(null); setMessage('メンバーを追加してください'); return; }
     if (cuisineCandidates.length === 0) { setCuisineResult(null); setMessage('条件に合う料理がありません'); return; }
+    const winner = cuisineCandidates.length === 1 ? cuisineCandidates[0] : drawOne(cuisineCandidates);
     setMessage(cuisineCandidates.length === 1 ? '候補は1件です。ルーレット演出は行いません。' : '');
-    setCuisineResult(cuisineCandidates.length === 1 ? cuisineCandidates[0] : drawOne(cuisineCandidates));
+    setCuisineResult(winner);
     setRestaurantResult(null);
+    setActiveReveal(cuisineCandidates.length === 1 ? null : { kind: 'cuisine', items: cuisineCandidates.map((candidate) => candidate.label), winnerLabel: winner.label });
   };
   const drawGroupRestaurant = () => {
     if (groupRestaurantCandidates.length === 0) { setRestaurantResult(null); setMessage('店候補を追加してください'); return; }
@@ -127,8 +136,10 @@ export function App() {
     setExcludedRestaurantIds([]);
     setCuisineResult(null);
     setProviderNotice('');
+    const winner = groupRestaurantCandidates.length === 1 ? groupRestaurantCandidates[0] : drawOne(groupRestaurantCandidates);
     setMessage(groupRestaurantCandidates.length === 1 ? '候補は1件です。この店に決定できます。' : '');
-    setRestaurantResult(groupRestaurantCandidates.length === 1 ? groupRestaurantCandidates[0] : drawOne(groupRestaurantCandidates));
+    setRestaurantResult(winner);
+    setActiveReveal(groupRestaurantCandidates.length === 1 ? null : { kind: 'restaurant', items: groupRestaurantCandidates.map((candidate) => candidate.name), winnerLabel: winner.name });
   };
   const drawPrimary = () => homeState.mode === 'group' && groupTarget === 'restaurant' ? drawGroupRestaurant() : drawCuisine();
   const decideCuisine = () => {
@@ -168,19 +179,27 @@ export function App() {
   const drawRestaurant = () => {
     const available = restaurantCandidates.filter((candidate) => selectedRestaurantIds.includes(candidate.id) && !excludedRestaurantIds.includes(candidate.id));
     if (available.length === 0) { setRestaurantResult(null); setMessage('条件に合う店舗がありません'); return; }
+    const winner = available.length === 1 ? available[0] : drawOne(available);
     setMessage(available.length === 1 ? '候補は1件です。この店に決定できます。' : '');
-    setRestaurantResult(available.length === 1 ? available[0] : drawOne(available));
+    setRestaurantResult(winner);
+    setActiveReveal(available.length === 1 ? null : { kind: 'restaurant', items: available.map((candidate) => candidate.name), winnerLabel: winner.name });
   };
   const rerollRestaurant = () => {
     const available = restaurantCandidates.filter((candidate) => selectedRestaurantIds.includes(candidate.id) && !excludedRestaurantIds.includes(candidate.id));
-    setRestaurantResult(available.length === 0 ? null : drawOne(available));
+    if (available.length === 0) { setRestaurantResult(null); setActiveReveal(null); return; }
+    const winner = drawOne(available);
+    setRestaurantResult(winner);
+    setActiveReveal(available.length === 1 ? null : { kind: 'restaurant', items: available.map((candidate) => candidate.name), winnerLabel: winner.name });
   };
   const excludeAndRerollRestaurant = () => {
     if (!restaurantResult) return;
     restaurantSession.excludeAndReroll(restaurantResult.id);
     setExcludedRestaurantIds((current) => [...current, restaurantResult.id]); setRestaurantCandidates(restaurantSession.getCandidates());
     const available = restaurantSession.getCandidates().filter((candidate) => selectedRestaurantIds.includes(candidate.id) && !excludedRestaurantIds.includes(candidate.id) && candidate.id !== restaurantResult.id);
-    setRestaurantResult(available.length === 0 ? null : drawOne(available));
+    if (available.length === 0) { setRestaurantResult(null); setActiveReveal(null); return; }
+    const winner = drawOne(available);
+    setRestaurantResult(winner);
+    setActiveReveal(available.length === 1 ? null : { kind: 'restaurant', items: available.map((candidate) => candidate.name), winnerLabel: winner.name });
   };
   const decideRestaurant = () => {
     if (!restaurantResult) return;
@@ -192,8 +211,18 @@ export function App() {
     store.saveRestaurant(restaurantResult); setVersion((current) => current + 1); setMessage('行きたい店に保存しました');
   };
   const toggleRestaurantSelection = (id: string) => setSelectedRestaurantIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-  const drawSavedRestaurant = (candidates: RestaurantCandidate[]) => setSavedRouletteResult(candidates.length === 0 ? null : drawOne(candidates));
-  const rerollSavedRestaurant = (candidates: RestaurantCandidate[]) => setSavedRouletteResult(candidates.length === 0 ? null : drawOne(candidates));
+  const drawSavedRestaurant = (candidates: RestaurantCandidate[]) => {
+    if (candidates.length === 0) { setSavedRouletteResult(null); setSavedReveal(null); return; }
+    const winner = drawOne(candidates);
+    setSavedRouletteResult(winner);
+    setSavedReveal(candidates.length === 1 ? null : { items: candidates.map((candidate) => candidate.name), winnerLabel: winner.name });
+  };
+  const rerollSavedRestaurant = (candidates: RestaurantCandidate[]) => {
+    if (candidates.length === 0) { setSavedRouletteResult(null); setSavedReveal(null); return; }
+    const winner = drawOne(candidates);
+    setSavedRouletteResult(winner);
+    setSavedReveal(candidates.length === 1 ? null : { items: candidates.map((candidate) => candidate.name), winnerLabel: winner.name });
+  };
   const decideSavedRestaurant = () => { if (!savedRouletteResult) return; recordDecision({ type: 'restaurant', id: savedRouletteResult.id, label: savedRouletteResult.name, restaurantId: savedRouletteResult.id, sessionSnapshot: buildSessionSnapshot(savedRouletteResult.foodIds) }, store); setVersion((current) => current + 1); };
   const rerunHistory = (item: DecisionHistory) => {
     const snapshot = item.sessionSnapshot;
@@ -239,8 +268,8 @@ export function App() {
           <button className="primary-button primary-button--hero" type="button" onClick={drawPrimary}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
         </div>
       </div>
-      {cuisineResult && <ResultCard cuisine={cuisineResult} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
-      {restaurantResult && <ResultCard restaurant={restaurantResult} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
+      {cuisineResult && <ResultCard cuisine={cuisineResult} reveal={activeReveal?.kind === 'cuisine' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
+      {restaurantResult && <ResultCard restaurant={restaurantResult} reveal={activeReveal?.kind === 'restaurant' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
       {restaurantCandidates.length > 0 && restaurantCandidates.some((candidate) => candidate.brandId) && <BranchPicker branches={restaurantCandidates} onSelect={(branch) => { setRestaurantResult(branch); setMessage('支店を選択しました'); }} />}
       {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
       {message && <p className="status-message" role="status">{message}</p>}
@@ -265,7 +294,7 @@ export function App() {
   return (
     <main className="app-shell">
       {activeTab === 'home' && renderHome()}
-      {activeTab === 'saved' && <div className="home-screen"><SavedRestaurants restaurants={savedRestaurants} result={savedRouletteResult} onRoulette={drawSavedRestaurant} onReroll={rerollSavedRestaurant} onDecision={decideSavedRestaurant} /></div>}
+      {activeTab === 'saved' && <div className="home-screen"><SavedRestaurants restaurants={savedRestaurants} result={savedRouletteResult} reveal={savedReveal ?? undefined} onRevealComplete={finishSavedReveal} onRoulette={drawSavedRestaurant} onReroll={rerollSavedRestaurant} onDecision={decideSavedRestaurant} /></div>}
       {activeTab === 'history' && <div className="home-screen"><HistoryList history={history} onRerun={rerunHistory} /></div>}
       <BottomNav activeTab={activeTab} onChange={setActiveTab} />
       {version > -1 && null}

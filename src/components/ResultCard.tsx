@@ -1,4 +1,5 @@
 import type { Food, RestaurantCandidate } from '../domain/types';
+import { RouletteReveal, type RouletteRevealConfig } from './RouletteReveal';
 
 type ResultCardProps = {
   cuisine?: Food | null;
@@ -9,9 +10,11 @@ type ResultCardProps = {
   onReroll?: () => void;
   onExcludeAndReroll?: () => void;
   onSaveRestaurant?: () => void;
+  reveal?: RouletteRevealConfig;
+  onRevealComplete?: () => void;
 };
 
-export function ResultCard({ cuisine, restaurant, onCuisineDecision, onFindRestaurant, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant }: ResultCardProps) {
+export function ResultCard({ cuisine, restaurant, onCuisineDecision, onFindRestaurant, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
   if (restaurant) {
     const hasMetadata = restaurant.metadataAvailable !== false;
     const destination = encodeURIComponent(`${restaurant.name} ${restaurant.locationLabel}`);
@@ -20,6 +23,7 @@ export function ResultCard({ cuisine, restaurant, onCuisineDecision, onFindResta
     return (
       <section className="result-card" aria-live="polite">
         <p className="eyebrow">今回の候補</p>
+        {reveal && onRevealComplete && <RouletteReveal {...reveal} onComplete={onRevealComplete} />}
         <h2>{restaurant.name}</h2>
         {hasMetadata && <><p>{restaurant.locationLabel} ・ {restaurant.travelSummary} ・ {restaurant.budgetLabel}</p>
         {restaurant.isOpen === false && <p className="notice">現在は営業時間外です</p>}
@@ -38,6 +42,7 @@ export function ResultCard({ cuisine, restaurant, onCuisineDecision, onFindResta
   return (
     <section className="result-card" aria-live="polite">
       <p className="eyebrow">今日のご飯は</p>
+      {reveal && onRevealComplete && <RouletteReveal {...reveal} onComplete={onRevealComplete} />}
       <h2>「{cuisine.label}」</h2>
       <div className="action-stack">
         <button className="primary-button" type="button" onClick={onCuisineDecision}>この料理に決定</button>

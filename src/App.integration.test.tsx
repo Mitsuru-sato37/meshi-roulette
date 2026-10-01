@@ -19,6 +19,7 @@ describe('meal roulette user flows', () => {
     chooseCuisine('寿司', '寿司・魚');
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
 
+    expect(screen.getByRole('status')).toHaveTextContent('抽選中');
     expect(screen.getByRole('button', { name: 'この料理に決定' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '履歴' }));
     expect(screen.getByText('まだ決定履歴はありません')).toBeInTheDocument();
@@ -163,6 +164,20 @@ describe('meal roulette user flows', () => {
     expect(screen.queryByRole('link', { name: '地図で見る' })).not.toBeInTheDocument();
   });
 
+  it('shows the selection reveal when the group store roulette has multiple choices', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'みんなで' }));
+    fireEvent.click(screen.getByRole('button', { name: '店を決める' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '行きたい店名' }), { target: { value: '王将' } });
+    fireEvent.click(screen.getByRole('button', { name: '店候補を追加' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '行きたい店名' }), { target: { value: 'すき家' } });
+    fireEvent.click(screen.getByRole('button', { name: '店候補を追加' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('抽選中');
+  });
+
   it('adds saved and history stores to the group store candidate list', () => {
     window.localStorage.setItem('meshi-roulette:saved-restaurants', JSON.stringify([{
       id: 'saved-shop', name: '保存店', foodIds: [], locationLabel: '駅前', travelSummary: '徒歩5分', isOpen: true, budgetLabel: '〜1,000円',
@@ -198,6 +213,19 @@ describe('meal roulette user flows', () => {
     expect(screen.getByText('保存店舗から選びました')).toBeInTheDocument();
   });
 
+  it('shows the selection reveal for multiple saved restaurants', () => {
+    window.localStorage.setItem('meshi-roulette:saved-restaurants', JSON.stringify([
+      { id: 'saved-one', name: '保存店A', foodIds: [], locationLabel: '駅前', travelSummary: '徒歩5分', isOpen: true, budgetLabel: '〜1,000円' },
+      { id: 'saved-two', name: '保存店B', foodIds: [], locationLabel: '商店街', travelSummary: '徒歩8分', isOpen: true, budgetLabel: '〜1,500円' },
+    ]));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: '行きたい店' }));
+    fireEvent.click(screen.getByRole('button', { name: '保存店舗でルーレットを回す' }));
+
+    expect(screen.getAllByRole('status').some((element) => element.textContent?.includes('抽選中'))).toBe(true);
+  });
+
   it('can rerun a cuisine decision from history', () => {
     render(<App />);
 
@@ -231,6 +259,7 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
     fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));
 
+    expect(screen.getAllByRole('status').some((element) => element.textContent?.includes('抽選中'))).toBe(true);
     expect(screen.getByRole('link', { name: '地図で見る' })).toHaveAttribute('href', expect.stringContaining('google.com/maps'));
     expect(screen.getByRole('link', { name: 'ナビを開始' })).toHaveAttribute('href', expect.stringContaining('dir'));
   });
