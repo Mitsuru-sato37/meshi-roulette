@@ -56,3 +56,27 @@ npm run dev
 サーバー側の入口には `src/server/restaurantSearchHandler.ts` を利用できます。Vercel Functions、Cloudflare Workers、Node系のHTTPアダプターから呼び出し、`RestaurantProvider` にPlaces／Routes実装を注入する想定です。
 
 チェーン・ブランド指定は現在、Fixture上の「岐阜タンメン」で、ブランド選択・特定支店の除外・支店の直接選択まで確認できます。Google Places側のブランド／支店同定、現在地・道中検索、営業時間や経路条件は別途プロバイダー拡張が必要です。
+
+## 別PCで開発を再開する
+
+GitHubを共通の正本として使います。初回だけ clone と依存関係のインストールを行います。
+
+```bash
+git clone https://github.com/Mitsuru-sato37/meshi-roulette.git
+cd meshi-roulette
+npm install
+```
+
+以降、作業開始時はGitHubとの差分を確認してから再開します。
+
+```bash
+git status
+git fetch origin
+git switch main
+git pull --ff-only
+```
+
+作業中のブランチを別PCへ引き継ぐ場合は、元のPCで commit と push を済ませ、別PCでは `git fetch origin` の後に同じブランチへ切り替えてください。未コミットの変更だけをPC間で同期する運用はしません。
+
+Codexは最初に `AGENTS.md` と本README、続いて `docs/product-spec.md` を読み、既存仕様を引き継いでから作業します。
+
