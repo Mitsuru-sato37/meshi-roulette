@@ -26,6 +26,8 @@ export type CuisineSelection = {
 
 export type CuisineCandidate = Food & { weight?: number };
 
+export type GroupTarget = 'food' | 'restaurant';
+
 export type WeightedCandidate = { id?: string; weight?: number; [key: string]: unknown };
 
 export type RestaurantCandidate = {
@@ -47,6 +49,7 @@ export type RestaurantCandidate = {
   supportsTakeout?: boolean | null;
   routeDetourMinutes?: number | null;
   location?: { latitude?: number; longitude?: number };
+  metadataAvailable?: boolean;
 };
 
 export type RestaurantConditions = {
@@ -81,4 +84,5 @@ export type GroupEntry = {
   type: 'food' | 'restaurant';
   candidateIds: string[];
   weight: number;
+  restaurant?: RestaurantCandidate;
 };

@@ -136,6 +136,53 @@ describe('meal roulette user flows', () => {
     expect(screen.getByRole('heading', { name: '「ラーメン」' })).toBeInTheDocument();
   });
 
+  it('switches group mode to store roulette and hides solo food controls', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'みんなで' }));
+    expect(screen.queryByRole('button', { name: /何を食べる？/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '店を決める' }));
+
+    expect(screen.getByRole('textbox', { name: '行きたい店名' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '履歴から追加' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '保存済みから追加' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '料理を選ぶ' })).not.toBeInTheDocument();
+  });
+
+  it('runs a roulette from a manually entered group store without provider search', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'みんなで' }));
+    fireEvent.click(screen.getByRole('button', { name: '店を決める' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '行きたい店名' }), { target: { value: '王将' } });
+    fireEvent.click(screen.getByRole('button', { name: '店候補を追加' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+
+    expect(screen.getByRole('heading', { name: '王将' })).toBeInTheDocument();
+    expect(screen.queryByText(/店舗情報は店舗検索/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '地図で見る' })).not.toBeInTheDocument();
+  });
+
+  it('adds saved and history stores to the group store candidate list', () => {
+    window.localStorage.setItem('meshi-roulette:saved-restaurants', JSON.stringify([{
+      id: 'saved-shop', name: '保存店', foodIds: [], locationLabel: '駅前', travelSummary: '徒歩5分', isOpen: true, budgetLabel: '〜1,000円',
+    }]));
+    window.localStorage.setItem('meshi-roulette:history', JSON.stringify([{
+      historyId: 'history-shop', type: 'restaurant', id: 'history-shop', label: '履歴店', createdAt: new Date().toISOString(),
+    }]));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'みんなで' }));
+    fireEvent.click(screen.getByRole('button', { name: '店を決める' }));
+    fireEvent.click(screen.getByRole('button', { name: '保存済みから追加' }));
+    fireEvent.click(screen.getByRole('button', { name: '保存店を候補に追加' }));
+    fireEvent.click(screen.getByRole('button', { name: '履歴から追加' }));
+    fireEvent.click(screen.getByRole('button', { name: '履歴店を候補に追加' }));
+
+    expect(screen.getByText('保存店')).toBeInTheDocument();
+    expect(screen.getByText('履歴店')).toBeInTheDocument();
+  });
+
   it('runs a roulette using saved restaurants only', async () => {
     render(<App />);
 

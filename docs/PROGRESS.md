@@ -61,6 +61,6 @@ Before stopping a meaningful Codex session, update this file with:
 ## Latest handoff
 
 - Active branch: `codex/award-level-ui`.
-- Completed: replaced the nostalgic paper-ticket styling with a mobile-first ticket composition, grouped cuisine navigation backed by the master-data hierarchy, stacked ticket-like cuisine rows, and a matching dark result stage; verified the home, grouped selection, and result states in the local browser.
-- Verification: `npm test -- --run` (58 tests passed), `npm run build` (passed).
-- Remaining: continue visual refinement if the next review identifies spacing or imagery differences from the reference.
+- Completed: replaced the nostalgic paper-ticket styling with a mobile-first ticket composition, grouped cuisine navigation backed by the master-data hierarchy, stacked ticket-like cuisine rows, and a matching dark result stage; added target-aware group mode with food roulette or direct store roulette from typed, history, and saved candidates; direct store candidates keep metadata unavailable and skip provider-derived map/details.
+- Verification: `npm test -- --run` (63 tests passed), `npm run build` (passed).
+- Remaining: publish the target-aware group flow and perform a final browser check at desktop and mobile widths.

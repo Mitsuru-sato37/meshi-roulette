@@ -3,7 +3,7 @@ import { buildCuisineCandidates } from './domain/candidates';
 import { foodCatalog } from './domain/masterData';
 import { recordDecision, type DecisionHistory } from './domain/history';
 import { drawOne } from './domain/roulette';
-import type { Food, RestaurantCandidate, CuisineSelection, GroupEntry } from './domain/types';
+import type { Food, RestaurantCandidate, CuisineSelection, GroupEntry, GroupTarget } from './domain/types';
 import { createLocalStore, getBrowserStorage } from './application/persistence';
 import { createHomeSessionState, resetGeneratedResults, updateConditions, updateFoodSelection, updateLocationMode, updateRoute } from './application/homeSession';
 import { createSession } from './application/session';
@@ -25,7 +25,7 @@ import { FoodPickerSheet } from './components/FoodPickerSheet';
 import { BrandPicker } from './components/BrandPicker';
 import { BranchPicker } from './components/BranchPicker';
 import { GroupPanel } from './components/GroupPanel';
-import { buildGroupFoodCandidates } from './domain/groupCandidates';
+import { buildGroupFoodCandidates, buildGroupRestaurantCandidates, createManualRestaurantCandidate } from './domain/groupCandidates';
 import { requestCurrentLocation } from './application/location';
 
 export function App() {
@@ -46,6 +46,7 @@ export function App() {
   const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
   const [excludedStoreIds, setExcludedStoreIds] = useState<string[]>([]);
   const [groupEntries, setGroupEntries] = useState<GroupEntry[]>([]);
+  const [groupTarget, setGroupTarget] = useState<GroupTarget>('food');
   const [providerNotice, setProviderNotice] = useState('');
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
@@ -55,11 +56,16 @@ export function App() {
       ? createGooglePlacesProvider({ apiKey: import.meta.env.VITE_GOOGLE_PLACES_API_KEY })
       : createFixtureRestaurantProvider(), []);
   const restaurantSession = useMemo(() => createSession(restaurantProvider), [restaurantProvider]);
-  const cuisineCandidates = homeState.mode === 'group' && groupEntries.length > 0
+  const cuisineCandidates = homeState.mode === 'group' && groupTarget === 'food' && groupEntries.length > 0
     ? buildGroupFoodCandidates(groupEntries, foodCatalog.foods)
     : buildCuisineCandidates(selection, foodCatalog);
   const history = store.getHistory();
   const savedRestaurants = store.getSavedRestaurants();
+  const historyRestaurants = history.filter((item) => item.type === 'restaurant').map((item) => {
+    const resolved = [...savedRestaurants, ...fixtureRestaurants].find((candidate) => candidate.id === item.restaurantId || candidate.id === item.id);
+    return resolved ?? createManualRestaurantCandidate(item.label);
+  }).filter((candidate, index, candidates) => candidates.findIndex((item) => item.id === candidate.id) === index);
+  const groupRestaurantCandidates = buildGroupRestaurantCandidates(groupEntries);
   const buildSessionSnapshot = (foodIds: string[]) => ({
     foodIds,
     brandIds: selectedBrandIds,
@@ -108,12 +114,23 @@ export function App() {
     }
   };
   const drawCuisine = () => {
-    if (homeState.mode === 'group' && groupEntries.length === 0) { setCuisineResult(null); setMessage('メンバーを追加してください'); return; }
+    if (homeState.mode === 'group' && groupTarget === 'food' && groupEntries.length === 0) { setCuisineResult(null); setMessage('メンバーを追加してください'); return; }
     if (cuisineCandidates.length === 0) { setCuisineResult(null); setMessage('条件に合う料理がありません'); return; }
     setMessage(cuisineCandidates.length === 1 ? '候補は1件です。ルーレット演出は行いません。' : '');
     setCuisineResult(cuisineCandidates.length === 1 ? cuisineCandidates[0] : drawOne(cuisineCandidates));
     setRestaurantResult(null);
   };
+  const drawGroupRestaurant = () => {
+    if (groupRestaurantCandidates.length === 0) { setRestaurantResult(null); setMessage('店候補を追加してください'); return; }
+    setRestaurantCandidates(groupRestaurantCandidates);
+    setSelectedRestaurantIds(groupRestaurantCandidates.map((candidate) => candidate.id));
+    setExcludedRestaurantIds([]);
+    setCuisineResult(null);
+    setProviderNotice('');
+    setMessage(groupRestaurantCandidates.length === 1 ? '候補は1件です。この店に決定できます。' : '');
+    setRestaurantResult(groupRestaurantCandidates.length === 1 ? groupRestaurantCandidates[0] : drawOne(groupRestaurantCandidates));
+  };
+  const drawPrimary = () => homeState.mode === 'group' && groupTarget === 'restaurant' ? drawGroupRestaurant() : drawCuisine();
   const decideCuisine = () => {
     if (!cuisineResult) return;
     recordDecision({ type: 'cuisine', id: cuisineResult.id, label: cuisineResult.label, sessionSnapshot: buildSessionSnapshot([cuisineResult.id]) }, store);
@@ -219,7 +236,7 @@ export function App() {
           <ModeSwitch mode={homeState.mode} onChange={(mode) => { setHomeState((current) => ({ ...current, mode })); clearGeneratedUi(); }} />
           <h1 id="home-title" aria-label="今日のご飯、どうする？"><span aria-hidden="true">今日の</span><span aria-hidden="true">ご飯、</span><em aria-hidden="true">どうする？</em></h1>
           <p className="intro">決まっていることだけ指定して、あとは一枚のチケットに任せよう。</p>
-          <button className="primary-button primary-button--hero" type="button" onClick={drawCuisine}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
+          <button className="primary-button primary-button--hero" type="button" onClick={drawPrimary}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
         </div>
       </div>
       {cuisineResult && <ResultCard cuisine={cuisineResult} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
@@ -228,19 +245,20 @@ export function App() {
       {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
       {message && <p className="status-message" role="status">{message}</p>}
       {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
+      {homeState.mode === 'group' && <GroupPanel entries={groupEntries} foods={foodCatalog.foods} target={groupTarget} savedRestaurants={savedRestaurants} historyRestaurants={historyRestaurants} onTargetChange={(target) => { setGroupTarget(target); clearGeneratedUi(); }} onChange={(entries) => { setGroupEntries(entries); clearGeneratedUi(); }} />}
       <ConditionSummary
         state={homeState}
+        showFood={homeState.mode !== 'group'}
         onFoodClick={() => setShowFoodPicker((current) => !current)}
         onLocationClick={() => setShowLocationPicker((current) => !current)}
         onConditionsClick={() => setShowConditionPanel((current) => !current)}
       />
       <button className="condition-more" type="button" onClick={() => setShowBrandPicker((current) => !current)}>チェーン・店舗を指定</button>
-      {homeState.mode === 'group' && <GroupPanel entries={groupEntries} foods={foodCatalog.foods} onChange={(entries) => { setGroupEntries(entries); clearGeneratedUi(); }} />}
-      {showFoodPicker && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
+      {showFoodPicker && homeState.mode !== 'group' && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
       {showBrandPicker && <BrandPicker brands={fixtureBrands} stores={fixtureRestaurants} selectedBrandIds={selectedBrandIds} excludedStoreIds={excludedStoreIds} onToggleBrand={toggleBrand} onToggleExcludeStore={toggleExcludeStore} />}
       {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} route={homeState.location.route} onUseCurrentLocation={useCurrentLocation} onRouteChange={(route) => { setHomeState((current) => updateRoute(current, route)); clearGeneratedUi(); }} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
-      <CuisinePicker groups={foodCatalog.groups} foods={foodCatalog.foods} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
+      {homeState.mode !== 'group' && <CuisinePicker groups={foodCatalog.groups} foods={foodCatalog.foods} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />}
     </section>
   );
 
