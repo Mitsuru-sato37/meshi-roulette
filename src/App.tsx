@@ -206,16 +206,20 @@ export function App() {
   const renderHome = () => (
     <section className="home-screen" aria-labelledby="home-title">
       <div className="hero-topline">
-        <p className="eyebrow">ご飯ルーレット <span className="eyebrow-dot" aria-hidden="true" /></p>
-        <span className="hero-index" aria-hidden="true">01 / 03</span>
+        <p className="eyebrow">食券ルーレット <span className="eyebrow-dot" aria-hidden="true" /></p>
+        <span className="hero-index" aria-hidden="true">NO. 0001</span>
       </div>
-      <div className="hero-copy">
-        <div>
-          <ModeSwitch mode={homeState.mode} onChange={(mode) => { setHomeState((current) => ({ ...current, mode })); clearGeneratedUi(); }} />
-          <h1 id="home-title">今日のご飯、<em>どうする？</em></h1>
-          <p className="intro">決まっていることだけ指定して、残りはルーレットに任せよう。</p>
+      <div className="ticket-hero">
+        <div className="ticket-hero__art" aria-hidden="true">
+          <span className="ticket-hero__art-label">TICKET / 0001</span>
+          <span className="ticket-hero__art-number">01</span>
+          <span className="ticket-hero__art-slash" />
         </div>
-        <div className="hero-orbit" aria-hidden="true"><span>?</span><i /></div>
+        <div className="ticket-hero__copy">
+          <ModeSwitch mode={homeState.mode} onChange={(mode) => { setHomeState((current) => ({ ...current, mode })); clearGeneratedUi(); }} />
+          <h1 id="home-title" aria-label="今日のご飯、どうする？"><span aria-hidden="true">今日のご飯、</span><em aria-hidden="true">どうする？</em></h1>
+          <p className="intro">決まっていることだけ指定して、あとは一枚のチケットに任せよう。</p>
+        </div>
       </div>
       <ConditionSummary
         state={homeState}

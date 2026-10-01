@@ -7,7 +7,7 @@ Last updated: 2026-10-01
 
 The MVP interface received a visual-quality pass aligned with the product rules:
 
-- editorial-style home hero with responsive layout;
+- modern ticket-style home hero with editorial typography, perforation details, and a lime accent;
 - stronger condition hierarchy and a single primary roulette CTA;
 - dark result stage with reduced-motion support and clearer next actions;
 - consistent saved/history screens and active bottom navigation treatment.
@@ -57,3 +57,10 @@ Before stopping a meaningful Codex session, update this file with:
 - remaining work;
 - verification run;
 - any external credential or user decision that blocks progress.
+
+## Latest handoff
+
+- Active branch: `codex/award-level-ui`.
+- Completed: replaced the nostalgic paper-ticket styling with the approved modern ticket direction; verified desktop and mobile layouts in the local browser.
+- Verification: `npm test -- --run` (58 tests passed), `npm run build` (passed).
+- Remaining: user review of the modern visual direction before committing and pushing the branch.
