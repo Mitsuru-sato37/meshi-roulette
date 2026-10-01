@@ -70,8 +70,12 @@ h1 em { color: var(--accent); font-family: 'Noto Serif JP', serif; font-style: n
 .condition-form select:focus, .location-input input:focus, .route-form input:focus, .route-form select:focus, .group-form input:focus, .group-form select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgb(227 93 62 / 16%); }
 .location-input, .route-form { margin-top: 16px; }
 .route-form { display: grid; gap: 10px; }
-.group-form { display: grid; grid-template-columns: 1.2fr 1fr .6fr; gap: 10px; }
-.group-form .secondary-button { grid-column: 1 / -1; }
+.group-form { display: grid; gap: 13px; margin-top: 18px; }
+.group-form__preferences { display: grid; grid-template-columns: minmax(0, 1fr) 92px; gap: 10px; min-width: 0; }
+.group-form__field { display: grid; min-width: 0; gap: 7px; color: var(--muted); font-size: .68rem; font-weight: 700; }
+.group-form__field input, .group-form__field select { width: 100%; min-width: 0; }
+.group-form__field--weight input { text-align: center; }
+.group-form .secondary-button { width: 100%; min-height: 48px; }
 .group-list { display: grid; gap: 8px; margin-top: 16px; }
 .group-row { display: flex; gap: 12px; align-items: center; padding: 11px 13px; border-radius: 13px; background: #f1f5ec; }
 .group-row span { flex: 1; }

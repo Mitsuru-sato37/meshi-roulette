@@ -18,9 +18,20 @@ export function GroupPanel({ entries, foods, onChange }: GroupPanelProps) {
     <section className="panel picker-panel" aria-labelledby="group-heading">
       <div className="section-heading"><div><p className="eyebrow">みんなで決める</p><h2 id="group-heading">メンバーと重み</h2></div></div>
       <div className="group-form">
-        <input aria-label="メンバー名" value={label} onChange={(event) => setLabel(event.target.value)} placeholder="メンバー名" />
-        <select aria-label="メンバーの料理" value={foodId} onChange={(event) => setFoodId(event.target.value)}>{foods.filter((food) => food.parentIds.length === 0).map((food) => <option key={food.id} value={food.id}>{food.label}</option>)}</select>
-        <input aria-label="メンバーの重み" type="number" min="1" value={weight} onChange={(event) => setWeight(Math.max(1, Number(event.target.value) || 1))} />
+        <label className="group-form__field group-form__field--name">
+          <span>メンバー名</span>
+          <input aria-label="メンバー名" value={label} onChange={(event) => setLabel(event.target.value)} placeholder="例：太郎" />
+        </label>
+        <div className="group-form__preferences">
+          <label className="group-form__field">
+            <span>食べたい料理</span>
+            <select aria-label="メンバーの料理" value={foodId} onChange={(event) => setFoodId(event.target.value)}>{foods.filter((food) => food.parentIds.length === 0).map((food) => <option key={food.id} value={food.id}>{food.label}</option>)}</select>
+          </label>
+          <label className="group-form__field group-form__field--weight">
+            <span>重み</span>
+            <input aria-label="メンバーの重み" type="number" min="1" value={weight} onChange={(event) => setWeight(Math.max(1, Number(event.target.value) || 1))} />
+          </label>
+        </div>
         <button className="secondary-button" type="button" onClick={addEntry}>メンバーを追加</button>
       </div>
       {entries.length === 0 && <p className="muted">メンバーを追加すると、料理の希望を重み付きで抽選できます。</p>}
