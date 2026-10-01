@@ -316,6 +316,13 @@ body { background-image: none; }
 .cuisine-group__heading h3 { margin: 0; color: var(--ink); font-size: 1rem; letter-spacing: -.05em; }
 .cuisine-group__heading span { color: #999994; font-family: 'DM Mono', monospace; font-size: .56rem; font-weight: 700; letter-spacing: .08em; }
 .cuisine-group .chip-grid { gap: 7px; }
+.cuisine-group__heading h3 { width: 100%; }
+.cuisine-group__toggle { display: flex; width: 100%; min-height: 48px; align-items: center; gap: 10px; border: 0; border-bottom: 1px solid #e8e8e2; padding: 0 2px; color: var(--ink); background: transparent; text-align: left; cursor: pointer; }
+.cuisine-group__toggle > span:first-child { color: var(--ink); font-family: inherit; font-size: 1rem; font-weight: 800; letter-spacing: -.05em; }
+.cuisine-group__toggle .cuisine-group__count { margin-left: auto; color: #999994; font-family: 'DM Mono', monospace; font-size: .56rem; font-weight: 700; letter-spacing: .08em; }
+.cuisine-group__icon { display: grid; width: 25px; height: 25px; place-items: center; border: 1px solid var(--ink); border-radius: 50%; color: var(--ink) !important; font-family: inherit !important; font-size: .9rem !important; line-height: 1; }
+.cuisine-group__toggle:hover .cuisine-group__icon, .cuisine-group__toggle:focus-visible .cuisine-group__icon { color: var(--paper) !important; background: var(--ink); }
+.cuisine-group--expanded .cuisine-group__toggle { border-bottom-color: var(--ink); }
 
 .primary-button--hero { box-shadow: 5px 5px 0 var(--ink); }
 .result-card { margin-top: 18px; padding: 22px 20px 20px; border-radius: 18px; box-shadow: 6px 6px 0 var(--accent); }

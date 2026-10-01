@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Food, FoodGroup } from '../domain/types';
 
 type CuisinePickerProps = {
@@ -11,6 +12,16 @@ type CuisinePickerProps = {
 
 export function CuisinePicker({ groups, foods, include, exclude, onToggleInclude, onToggleExclude }: CuisinePickerProps) {
   const foodById = new Map(foods.map((food) => [food.id, food]));
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((current) => {
+      const next = new Set(current);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  };
 
   return (
     <section className="panel" aria-labelledby="cuisine-heading">
@@ -28,12 +39,17 @@ export function CuisinePicker({ groups, foods, include, exclude, onToggleInclude
             .filter((food): food is Food => food !== undefined && food.parentIds.length === 0);
           if (groupFoods.length === 0) return null;
           return (
-            <section key={group.id} className="cuisine-group" aria-labelledby={`cuisine-group-${group.id}`}>
+            <section key={group.id} className={`cuisine-group${expandedGroups.has(group.id) ? ' cuisine-group--expanded' : ''}`} aria-labelledby={`cuisine-group-${group.id}`}>
               <div className="cuisine-group__heading">
-                <h3 id={`cuisine-group-${group.id}`}>{group.label}</h3>
-                <span>{groupFoods.length}種類</span>
+                <h3 id={`cuisine-group-${group.id}`}>
+                  <button className="cuisine-group__toggle" type="button" aria-expanded={expandedGroups.has(group.id)} aria-controls={`cuisine-items-${group.id}`} onClick={() => toggleGroup(group.id)}>
+                    <span>{group.label}</span>
+                    <span className="cuisine-group__count" aria-hidden="true">{groupFoods.length}種類</span>
+                    <span className="cuisine-group__icon" aria-hidden="true">{expandedGroups.has(group.id) ? '−' : '＋'}</span>
+                  </button>
+                </h3>
               </div>
-              <div className="chip-grid">
+              {expandedGroups.has(group.id) && <div id={`cuisine-items-${group.id}`} className="chip-grid">
                 {groupFoods.map((food) => {
                   const selected = include.includes(food.id);
                   const isExcluded = exclude.includes(food.id);
@@ -50,7 +66,7 @@ export function CuisinePicker({ groups, foods, include, exclude, onToggleInclude
                     </div>
                   );
                 })}
-              </div>
+              </div>}
             </section>
           );
         })}

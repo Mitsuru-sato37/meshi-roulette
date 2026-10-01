@@ -222,6 +222,12 @@ export function App() {
           <button className="primary-button primary-button--hero" type="button" onClick={drawCuisine}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
         </div>
       </div>
+      {cuisineResult && <ResultCard cuisine={cuisineResult} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
+      {restaurantResult && <ResultCard restaurant={restaurantResult} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
+      {restaurantCandidates.length > 0 && restaurantCandidates.some((candidate) => candidate.brandId) && <BranchPicker branches={restaurantCandidates} onSelect={(branch) => { setRestaurantResult(branch); setMessage('支店を選択しました'); }} />}
+      {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
+      {message && <p className="status-message" role="status">{message}</p>}
+      {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
       <ConditionSummary
         state={homeState}
         onFoodClick={() => setShowFoodPicker((current) => !current)}
@@ -235,12 +241,6 @@ export function App() {
       {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} route={homeState.location.route} onUseCurrentLocation={useCurrentLocation} onRouteChange={(route) => { setHomeState((current) => updateRoute(current, route)); clearGeneratedUi(); }} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
       <CuisinePicker groups={foodCatalog.groups} foods={foodCatalog.foods} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />
-      {message && <p className="status-message" role="status">{message}</p>}
-      {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
-      {cuisineResult && <ResultCard cuisine={cuisineResult} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
-      {restaurantCandidates.length > 0 && restaurantCandidates.some((candidate) => candidate.brandId) && <BranchPicker branches={restaurantCandidates} onSelect={(branch) => { setRestaurantResult(branch); setMessage('支店を選択しました'); }} />}
-      {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
-      {restaurantResult && <ResultCard restaurant={restaurantResult} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
     </section>
   );
 
