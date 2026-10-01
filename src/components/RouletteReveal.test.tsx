@@ -18,4 +18,15 @@ describe('RouletteReveal', () => {
     expect(screen.getByText('海鮮')).toBeInTheDocument();
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps the winner out of the rolling labels until the reveal completes', () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+    render(<RouletteReveal items={['ラーメン', 'カレー', '海鮮']} winnerLabel="海鮮" onComplete={onComplete} />);
+
+    act(() => { vi.advanceTimersByTime(240); });
+
+    expect(screen.getByRole('status')).not.toHaveTextContent('海鮮');
+    expect(onComplete).not.toHaveBeenCalled();
+  });
 });

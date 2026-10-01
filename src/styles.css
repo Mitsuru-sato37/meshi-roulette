@@ -122,15 +122,27 @@ h1 em { color: var(--accent); font-family: 'Noto Serif JP', serif; font-style: n
 .map-links a { color: var(--lime); font-size: .76rem; font-weight: 700; text-decoration: none; }
 .result-card .secondary-button { border-color: rgb(255 255 255 / 18%); color: #e6eee7; background: rgb(255 255 255 / 7%); }
 .result-card .text-button { color: var(--lime); }
-.roulette-reveal { position: relative; display: grid; gap: 8px; margin: 12px 0 18px; padding: 14px 15px 13px; border: 1px solid rgb(215 232 101 / 32%); border-radius: 12px; background: rgb(255 255 255 / 7%); overflow: hidden; }
+.roulette-reveal { position: relative; display: grid; gap: 13px; margin: 12px 0 18px; padding: 16px 16px 15px; border: 1px solid rgb(215 232 101 / 46%); border-radius: 14px; background: linear-gradient(145deg, rgb(255 255 255 / 11%), rgb(255 255 255 / 4%)); box-shadow: inset 0 1px rgb(255 255 255 / 9%), 0 14px 30px rgb(0 0 0 / 14%); overflow: hidden; }
+.roulette-reveal::before { position: absolute; top: -45px; right: -31px; width: 112px; height: 112px; border: 1px solid rgb(215 232 101 / 32%); border-radius: 50%; box-shadow: 0 0 0 12px rgb(215 232 101 / 5%); content: ''; pointer-events: none; }
+.roulette-reveal__meta { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
 .roulette-reveal__eyebrow { color: var(--lime); font-family: 'DM Mono', monospace; font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; }
-.roulette-reveal__label { min-height: 1.35em; color: var(--paper); font-size: clamp(1.35rem, 5vw, 2rem); font-weight: 800; letter-spacing: -.06em; animation: roulette-pulse .16s ease-out; }
-.roulette-reveal__track { position: relative; display: block; height: 3px; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / 14%); }
-.roulette-reveal__track span { display: block; width: 35%; height: 100%; border-radius: inherit; background: var(--lime); animation: roulette-track 1s cubic-bezier(.2,.8,.2,1) infinite; }
+.roulette-reveal__count { color: rgb(255 255 255 / 56%); font-family: 'DM Mono', monospace; font-size: .62rem; letter-spacing: .08em; }
+.roulette-reveal__slot-window { position: relative; display: grid; min-height: 132px; place-items: center; align-content: center; gap: 2px; padding: 11px 20px; border: 1px solid rgb(255 255 255 / 16%); border-radius: 12px; background: rgb(0 0 0 / 17%); overflow: hidden; }
+.roulette-reveal__slot-window::before, .roulette-reveal__slot-window::after { position: absolute; right: 0; left: 0; height: 34px; content: ''; pointer-events: none; }
+.roulette-reveal__slot-window::before { top: 0; background: linear-gradient(rgb(18 19 17), transparent); }
+.roulette-reveal__slot-window::after { bottom: 0; background: linear-gradient(transparent, rgb(18 19 17)); }
+.roulette-reveal__slot-row { position: relative; z-index: 1; display: block; max-width: 100%; overflow: hidden; color: rgb(255 255 255 / 34%); font-size: .88rem; font-weight: 700; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+.roulette-reveal__slot-row--previous { transform: translateY(-2px); }
+.roulette-reveal__slot-row--next { transform: translateY(2px); }
+.roulette-reveal__label { position: relative; z-index: 2; min-height: 1.2em; color: var(--paper); font-size: clamp(1.7rem, 7vw, 2.45rem); font-weight: 900; letter-spacing: -.08em; line-height: 1.1; text-align: center; animation: roulette-slot-in .22s cubic-bezier(.2,.8,.2,1); }
+.roulette-reveal__marker { position: absolute; z-index: 3; top: 50%; right: 10px; color: var(--lime); font-size: .6rem; transform: translateY(-50%); }
+.roulette-reveal__track { position: relative; display: block; height: 5px; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / 14%); }
+.roulette-reveal__track span { display: block; height: 100%; border-radius: inherit; background: var(--lime); box-shadow: 0 0 12px rgb(215 232 101 / 55%); transition: width .08s linear; }
+.roulette-reveal__hint { color: rgb(255 255 255 / 52%); font-size: .67rem; letter-spacing: .05em; }
+.roulette-reveal--complete .roulette-reveal__hint { color: var(--lime); }
 .result-card__final--hidden { visibility: hidden; height: 0 !important; min-height: 0 !important; margin: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; border: 0 !important; overflow: hidden; opacity: 0; pointer-events: none; }
-@keyframes roulette-pulse { from { opacity: .45; transform: translateY(3px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes roulette-track { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
-@media (prefers-reduced-motion: reduce) { .roulette-reveal__label, .roulette-reveal__track span { animation: none; } }
+@keyframes roulette-slot-in { from { opacity: .2; transform: translateY(9px) scale(.92); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .roulette-reveal__label, .roulette-reveal__track span { animation: none; transition: none; } }
 
 .candidate-list, .simple-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
 .candidate-row, .simple-list li { display: flex; gap: 12px; align-items: center; padding: 13px; border: 1px solid #e7eee5; border-radius: 14px; background: #fff; }

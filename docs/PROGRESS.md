@@ -61,6 +61,6 @@ Before stopping a meaningful Codex session, update this file with:
 ## Latest handoff
 
 - Active branch: `codex/award-level-ui`.
-- Completed: replaced the nostalgic paper-ticket styling with a mobile-first ticket composition, grouped cuisine navigation backed by the master-data hierarchy, stacked ticket-like cuisine rows, and a matching dark result stage; added target-aware group mode with food roulette or direct store roulette from typed, history, and saved candidates; direct store candidates keep metadata unavailable and skip provider-derived map/details; added a shared candidate reveal animation to cuisine, restaurant, group-store, and saved-store roulette flows; hid the final result content during the reveal so the winner is not spoiled.
-- Verification: `npm test -- --run` (67 tests passed), `npm run build` (passed); browser-checked the compact reveal card at localhost.
-- Remaining: publish the no-spoiler reveal fix.
+- Completed: replaced the nostalgic paper-ticket styling with a mobile-first ticket composition, grouped cuisine navigation backed by the master-data hierarchy, stacked ticket-like cuisine rows, and a matching dark result stage; added target-aware group mode with food roulette or direct store roulette from typed, history, and saved candidates; direct store candidates keep metadata unavailable and skip provider-derived map/details; added a shared candidate reveal animation to cuisine, restaurant, group-store, and saved-store roulette flows; hid the final result content during the reveal so the winner is not spoiled; upgraded the reveal into a slot-style candidate reel with a visible progress meter and kept the winner out of the rolling labels.
+- Verification: `npm test -- --run` (68 tests passed), `npm run build` (passed), `git diff --check` (passed); browser-checked the stronger reveal card at localhost.
+- Remaining: commit and publish the stronger reveal animation.
