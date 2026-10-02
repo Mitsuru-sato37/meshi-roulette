@@ -6,11 +6,7 @@ import { drawOne } from './domain/roulette';
 import type { Food, RestaurantCandidate, CuisineSelection, GroupEntry, GroupTarget } from './domain/types';
 import { createLocalStore, getBrowserStorage } from './application/persistence';
 import { createHomeSessionState, resetGeneratedResults, updateConditions, updateFoodSelection, updateLocationMode, updateRoute } from './application/homeSession';
-import { createSession } from './application/session';
-import { createFixtureRestaurantProvider } from './providers/fixtureRestaurantProvider';
-import { createGooglePlacesProvider } from './providers/googlePlacesProvider';
-import { createRemoteRestaurantProvider } from './providers/remoteRestaurantProvider';
-import { fixtureBrands, fixtureRestaurants } from './providers/fixtureRestaurants';
+import { fixtureRestaurants } from './providers/fixtureRestaurants';
 import { BottomNav, type AppTab } from './components/BottomNav';
 import { CandidateList } from './components/CandidateList';
 import { CuisinePicker } from './components/CuisinePicker';
@@ -22,13 +18,10 @@ import { ConditionSummary } from './components/ConditionSummary';
 import { LocationPicker } from './components/LocationPicker';
 import { ModeSwitch } from './components/ModeSwitch';
 import { FoodPickerSheet } from './components/FoodPickerSheet';
-import { BrandPicker } from './components/BrandPicker';
-import { BranchPicker } from './components/BranchPicker';
 import { GroupPanel } from './components/GroupPanel';
 import { buildGroupFoodCandidates, buildGroupRestaurantCandidates, createManualRestaurantCandidate } from './domain/groupCandidates';
 import { requestCurrentLocation } from './application/location';
 import type { RouletteRevealConfig } from './components/RouletteReveal';
-import { buildCuisineSearchUrl } from './domain/mapLinks';
 
 type ActiveReveal = RouletteRevealConfig & { kind: 'cuisine' | 'restaurant' };
 
@@ -46,22 +39,14 @@ export function App() {
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showConditionPanel, setShowConditionPanel] = useState(false);
   const [showFoodPicker, setShowFoodPicker] = useState(false);
-  const [showBrandPicker, setShowBrandPicker] = useState(false);
   const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
   const [excludedStoreIds, setExcludedStoreIds] = useState<string[]>([]);
   const [groupEntries, setGroupEntries] = useState<GroupEntry[]>([]);
   const [groupTarget, setGroupTarget] = useState<GroupTarget>('food');
-  const [providerNotice, setProviderNotice] = useState('');
   const [activeReveal, setActiveReveal] = useState<ActiveReveal | null>(null);
   const [savedReveal, setSavedReveal] = useState<RouletteRevealConfig | null>(null);
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
-  const restaurantProvider = useMemo(() => import.meta.env.VITE_RESTAURANT_API_URL
-    ? createRemoteRestaurantProvider({ endpoint: import.meta.env.VITE_RESTAURANT_API_URL })
-    : import.meta.env.VITE_GOOGLE_PLACES_API_KEY
-      ? createGooglePlacesProvider({ apiKey: import.meta.env.VITE_GOOGLE_PLACES_API_KEY })
-      : createFixtureRestaurantProvider(), []);
-  const restaurantSession = useMemo(() => createSession(restaurantProvider), [restaurantProvider]);
   const cuisineCandidates = homeState.mode === 'group' && groupTarget === 'food' && groupEntries.length > 0
     ? buildGroupFoodCandidates(groupEntries, foodCatalog.foods)
     : buildCuisineCandidates(selection, foodCatalog);
@@ -88,7 +73,7 @@ export function App() {
   });
 
   const clearGeneratedUi = () => {
-    setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setProviderNotice(''); setMessage(''); setActiveReveal(null);
+    setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setMessage(''); setActiveReveal(null);
   };
   const finishActiveReveal = useCallback(() => setActiveReveal(null), []);
   const finishSavedReveal = useCallback(() => setSavedReveal(null), []);
@@ -102,14 +87,6 @@ export function App() {
     setHomeState((current) => updateFoodSelection(current, id, 'exclude'));
     setSelection((current) => ({ ...current, exclude: current.exclude.includes(id) ? current.exclude.filter((item) => item !== id) : [...current.exclude, id] }));
     setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setMessage('');
-  };
-  const toggleBrand = (id: string) => {
-    setSelectedBrandIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-    clearGeneratedUi();
-  };
-  const toggleExcludeStore = (id: string) => {
-    setExcludedStoreIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-    clearGeneratedUi();
   };
   const useCurrentLocation = async () => {
     try {
@@ -136,7 +113,6 @@ export function App() {
     setSelectedRestaurantIds(groupRestaurantCandidates.map((candidate) => candidate.id));
     setExcludedRestaurantIds([]);
     setCuisineResult(null);
-    setProviderNotice('');
     const winner = groupRestaurantCandidates.length === 1 ? groupRestaurantCandidates[0] : drawOne(groupRestaurantCandidates);
     setMessage(groupRestaurantCandidates.length === 1 ? '候補は1件です。この店に決定できます。' : '');
     setRestaurantResult(winner);
@@ -147,35 +123,6 @@ export function App() {
     if (!cuisineResult) return;
     recordDecision({ type: 'cuisine', id: cuisineResult.id, label: cuisineResult.label, sessionSnapshot: buildSessionSnapshot([cuisineResult.id]) }, store);
     setVersion((current) => current + 1); setMessage('料理を決定しました');
-  };
-  const findRestaurants = async () => {
-    if (!cuisineResult) return;
-    const query = {
-      foodIds: [cuisineResult.id],
-      locationLabel: homeState.location.label ?? undefined,
-      location: { label: homeState.location.label, latitude: homeState.location.latitude, longitude: homeState.location.longitude },
-      route: homeState.location.route,
-      brandIds: selectedBrandIds,
-      excludeStoreIds: excludedStoreIds,
-      conditions: {
-        budgetMax: homeState.conditions.budget,
-        transport: homeState.conditions.transport,
-        travelTimeMax: homeState.conditions.travelTime,
-        eatingTime: homeState.conditions.eatingTime,
-        parkingRequired: homeState.conditions.parking === 'required',
-        takeoutRequired: homeState.conditions.takeout,
-      },
-    };
-    try {
-      await restaurantSession.generate(query);
-    } catch {
-      setProviderNotice('店舗情報を取得できませんでした。設定と通信状態を確認してください');
-      setRestaurantCandidates([]); setSelectedRestaurantIds([]); setMessage('店舗情報を取得できませんでした。設定と通信状態を確認してください'); return;
-    }
-    const candidates = restaurantSession.getCandidates();
-    setProviderNotice(restaurantProvider.kind === 'fixture' ? 'これは店舗検索の仮データです' : restaurantProvider.kind === 'remote' ? '店舗情報は検索サーバーから取得しています' : '店舗情報はGoogle Placesから取得しています');
-    setRestaurantCandidates(candidates); setSelectedRestaurantIds(candidates.map((candidate) => candidate.id)); setExcludedRestaurantIds([]); setRestaurantResult(null); setMessage('');
-    if (candidates.length === 0) setMessage('条件に合う店舗がありません');
   };
   const drawRestaurant = () => {
     const available = restaurantCandidates.filter((candidate) => selectedRestaurantIds.includes(candidate.id) && !excludedRestaurantIds.includes(candidate.id));
@@ -194,9 +141,9 @@ export function App() {
   };
   const excludeAndRerollRestaurant = () => {
     if (!restaurantResult) return;
-    restaurantSession.excludeAndReroll(restaurantResult.id);
-    setExcludedRestaurantIds((current) => [...current, restaurantResult.id]); setRestaurantCandidates(restaurantSession.getCandidates());
-    const available = restaurantSession.getCandidates().filter((candidate) => selectedRestaurantIds.includes(candidate.id) && !excludedRestaurantIds.includes(candidate.id) && candidate.id !== restaurantResult.id);
+    const nextExcludedIds = excludedRestaurantIds.includes(restaurantResult.id) ? excludedRestaurantIds : [...excludedRestaurantIds, restaurantResult.id];
+    setExcludedRestaurantIds(nextExcludedIds);
+    const available = restaurantCandidates.filter((candidate) => selectedRestaurantIds.includes(candidate.id) && !nextExcludedIds.includes(candidate.id));
     if (available.length === 0) { setRestaurantResult(null); setActiveReveal(null); return; }
     const winner = drawOne(available);
     setRestaurantResult(winner);
@@ -269,16 +216,10 @@ export function App() {
           <button className="primary-button primary-button--hero" type="button" onClick={drawPrimary}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
         </div>
       </div>
-      {cuisineResult && <ResultCard cuisine={cuisineResult} reveal={activeReveal?.kind === 'cuisine' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onCuisineDecision={decideCuisine} onFindRestaurant={findRestaurants} onReroll={drawCuisine} />}
+      {cuisineResult && <ResultCard cuisine={cuisineResult} cuisineLocationLabel={homeState.location.mode === 'specified' ? homeState.location.label : undefined} reveal={activeReveal?.kind === 'cuisine' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onCuisineDecision={decideCuisine} onReroll={drawCuisine} />}
       {restaurantResult && <ResultCard restaurant={restaurantResult} reveal={activeReveal?.kind === 'restaurant' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
-      {restaurantCandidates.length > 0 && restaurantCandidates.some((candidate) => candidate.brandId) && <BranchPicker branches={restaurantCandidates} onSelect={(branch) => { setRestaurantResult(branch); setMessage('支店を選択しました'); }} />}
       {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
       {message && <p className="status-message" role="status">{message}</p>}
-      {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
-      {cuisineResult && !restaurantResult && restaurantCandidates.length === 0 && message === '条件に合う店舗がありません' && <section className="map-search-fallback" aria-label="Googleマップで料理を探す">
-        <p>検索結果がないため、選んだ料理をGoogleマップで探せます。</p>
-        <a href={buildCuisineSearchUrl({ label: cuisineResult.label, locationLabel: homeState.location.label })}><MapSearchIcon />Googleマップでこの料理を探す</a>
-      </section>}
       {homeState.mode === 'group' && <GroupPanel entries={groupEntries} foods={foodCatalog.foods} target={groupTarget} savedRestaurants={savedRestaurants} historyRestaurants={historyRestaurants} onTargetChange={(target) => { setGroupTarget(target); clearGeneratedUi(); }} onChange={(entries) => { setGroupEntries(entries); clearGeneratedUi(); }} />}
       <ConditionSummary
         state={homeState}
@@ -287,9 +228,7 @@ export function App() {
         onLocationClick={() => setShowLocationPicker((current) => !current)}
         onConditionsClick={() => setShowConditionPanel((current) => !current)}
       />
-      <button className="condition-more" type="button" onClick={() => setShowBrandPicker((current) => !current)}>チェーン・店舗を指定</button>
       {showFoodPicker && homeState.mode !== 'group' && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
-      {showBrandPicker && <BrandPicker brands={fixtureBrands} stores={fixtureRestaurants} selectedBrandIds={selectedBrandIds} excludedStoreIds={excludedStoreIds} onToggleBrand={toggleBrand} onToggleExcludeStore={toggleExcludeStore} />}
       {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} route={homeState.location.route} onUseCurrentLocation={useCurrentLocation} onRouteChange={(route) => { setHomeState((current) => updateRoute(current, route)); clearGeneratedUi(); }} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
       {homeState.mode !== 'group' && <CuisinePicker groups={foodCatalog.groups} foods={foodCatalog.foods} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />}
@@ -305,8 +244,4 @@ export function App() {
       {version > -1 && null}
     </main>
   );
-}
-
-function MapSearchIcon() {
-  return <svg className="map-link__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z" /><circle cx="12" cy="9" r="2.25" /></svg>;
 }

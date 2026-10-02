@@ -1,12 +1,12 @@
 import type { Food, RestaurantCandidate } from '../domain/types';
-import { buildMapLinks } from '../domain/mapLinks';
+import { buildCuisineSearchUrl, buildMapLinks } from '../domain/mapLinks';
 import { RouletteReveal, type RouletteRevealConfig } from './RouletteReveal';
 
 type ResultCardProps = {
   cuisine?: Food | null;
+  cuisineLocationLabel?: string | null;
   restaurant?: RestaurantCandidate | null;
   onCuisineDecision?: () => void;
-  onFindRestaurant?: () => void;
   onRestaurantDecision?: () => void;
   onReroll?: () => void;
   onExcludeAndReroll?: () => void;
@@ -15,7 +15,7 @@ type ResultCardProps = {
   onRevealComplete?: () => void;
 };
 
-export function ResultCard({ cuisine, restaurant, onCuisineDecision, onFindRestaurant, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
+export function ResultCard({ cuisine, cuisineLocationLabel, restaurant, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
   const finalClassName = reveal ? 'result-card__final--hidden' : undefined;
   if (restaurant) {
     const hasMetadata = restaurant.metadataAvailable !== false;
@@ -42,6 +42,7 @@ export function ResultCard({ cuisine, restaurant, onCuisineDecision, onFindResta
   }
 
   if (!cuisine) return null;
+  const cuisineMapUrl = buildCuisineSearchUrl({ label: cuisine.label, locationLabel: cuisineLocationLabel });
   return (
     <section className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
       <p className="eyebrow">今日のご飯は</p>
@@ -49,7 +50,7 @@ export function ResultCard({ cuisine, restaurant, onCuisineDecision, onFindResta
       <h2 className={finalClassName}>「{cuisine.label}」</h2>
       <div className={`action-stack ${finalClassName ?? ''}`}>
         <button className="primary-button" type="button" onClick={onCuisineDecision}>この料理に決定</button>
-        <button className="secondary-button" type="button" onClick={onFindRestaurant}>この料理のお店を探す</button>
+        <a className="secondary-button result-card__map-button" href={cuisineMapUrl}><MapIcon />Googleマップで店を探す</a>
         <button className="text-button" type="button" onClick={onReroll}>もう一度回す</button>
       </div>
     </section>

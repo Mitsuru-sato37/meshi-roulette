@@ -51,11 +51,11 @@ npm install
 npm run dev
 ```
 
-本番運用では、店舗検索サーバーのURLを `.env.local` の `VITE_RESTAURANT_API_URL` に設定してください。検索条件・ブランド・場所・道中条件をサーバーへ送り、APIキーをブラウザへ公開しない構成を推奨します。移行用に `VITE_GOOGLE_PLACES_API_KEY` も利用できますが、キー管理とRoutes APIの実装が必要です。どちらも未設定の場合はFixtureによる開発表示になり、Fixtureにない料理は候補0件として表示されます。その場合も、選んだ料理をGoogleマップで直接探すリンクを表示します。
+料理ルーレットの結果から店舗を探す場合は、選んだ料理と指定場所をGoogleマップへ直接渡します。アプリ内で店舗候補を生成・抽選する店舗検索サーバー（`VITE_RESTAURANT_API_URL`）やPlacesキーは、将来アプリ内検索を追加する場合の拡張用です。みんなで店を決めるモードでは、入力・履歴・保存済みの店をアプリ内でルーレットできます。
 
 サーバー側の入口には `src/server/restaurantSearchHandler.ts` を利用できます。Vercel Functions、Cloudflare Workers、Node系のHTTPアダプターから呼び出し、`RestaurantProvider` にPlaces／Routes実装を注入する想定です。
 
-チェーン・ブランド指定は現在、Fixture上の「岐阜タンメン」で、ブランド選択・特定支店の除外・支店の直接選択まで確認できます。Google Places側のブランド／支店同定、現在地・道中検索、営業時間や経路条件は別途プロバイダー拡張が必要です。
+以前のFixtureによるチェーン・支店検索コードは、現在の料理→店舗フローでは使用しません。Googleマップ側の検索結果を使い、アプリ内ではみんなで指定した店だけをルーレット対象にします。
 
 ## 別PCで開発を再開する
 

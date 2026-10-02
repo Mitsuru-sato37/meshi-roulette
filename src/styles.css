@@ -102,10 +102,7 @@ h1 em { color: var(--accent); font-family: 'Noto Serif JP', serif; font-style: n
 .exclude-chip--active { text-decoration: line-through; }
 .status-message { margin: 18px 0; padding: 13px 15px; border: 1px solid #f0cfc4; border-radius: 13px; color: #93432f; background: #fff0eb; font-size: .8rem; }
 .provider-notice { color: #627159; border-color: #d9e6b6; background: #f4f9df; }
-.map-search-fallback { display: grid; gap: 10px; margin: 18px 0; padding: 15px; border: 1px solid #d9e6b6; border-radius: 14px; background: #f4f9df; }
-.map-search-fallback p { margin: 0; color: #627159; font-size: .78rem; line-height: 1.6; }
-.map-search-fallback a { display: inline-flex; align-items: center; gap: 7px; color: var(--ink); font-size: .8rem; font-weight: 800; text-decoration: none; }
-.map-search-fallback a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.result-card__map-button { display: flex; align-items: center; gap: 8px; text-decoration: none; }
 
 .primary-button { display: flex; width: 100%; min-height: 54px; align-items: center; justify-content: center; gap: 12px; border: 0; border-radius: 15px; color: #fffaf7; background: var(--accent); font-weight: 800; cursor: pointer; box-shadow: 0 12px 22px rgb(227 93 62 / 20%); transition: box-shadow .2s, transform .2s, background .2s; }
 .primary-button:hover { background: var(--accent-dark); box-shadow: 0 16px 28px rgb(227 93 62 / 28%); transform: translateY(-2px); }

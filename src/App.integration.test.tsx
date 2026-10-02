@@ -30,19 +30,16 @@ describe('meal roulette user flows', () => {
     expect(screen.getByText(/決定履歴/)).toBeInTheDocument();
   });
 
-  it('continues from a cuisine result to a restaurant result without saving history on display', async () => {
+  it('opens Google Maps directly from a cuisine result without creating app-side candidates', () => {
     render(<App />);
 
     chooseCuisine('カレー', 'ご飯もの');
-    fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
-    fireEvent.change(screen.getByLabelText('食べる時間'), { target: { value: 'scheduled' } });
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
-    fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));
+    const link = screen.getByRole('link', { name: 'Googleマップで店を探す' });
 
-    expect(screen.getAllByText('食堂まる')).toHaveLength(2);
-    fireEvent.click(screen.getByRole('button', { name: '履歴' }));
-    expect(screen.getByText('まだ決定履歴はありません')).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', expect.stringContaining('google.com/maps/search'));
+    expect(screen.queryByText('店舗検索の仮データです')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '店舗ルーレットを回す' })).not.toBeInTheDocument();
   });
 
   it('shows a clear zero-candidate state without changing the user conditions', () => {
@@ -56,86 +53,28 @@ describe('meal roulette user flows', () => {
     expect(screen.getByRole('button', { name: 'ラーメンを候補から除外' })).toBeInTheDocument();
   });
 
-  it('offers a direct map search when the provider has no restaurant candidates', async () => {
+  it('includes the selected location in the direct cuisine map search', () => {
     render(<App />);
 
     chooseCuisine('パスタ', 'イタリアン等');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '場所を指定' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '駅名・施設名・住所' }), { target: { value: '名古屋駅' } });
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
 
-    expect(await screen.findByText('条件に合う店舗がありません')).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: 'Googleマップでこの料理を探す' });
-    expect(link).toHaveAttribute('href', expect.stringContaining('google.com/maps/search'));
-    expect(link).not.toHaveAttribute('target', '_blank');
+    const link = screen.getByRole('link', { name: 'Googleマップで店を探す' });
+    expect(new URL(link.getAttribute('href') ?? '').searchParams.get('query')).toBe('パスタ 名古屋駅');
   });
 
-  it('does not show a roulette action for a single restaurant candidate', async () => {
-    render(<App />);
-
-    chooseCuisine('カレー', 'ご飯もの');
-    fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
-    fireEvent.change(screen.getByLabelText('食べる時間'), { target: { value: 'scheduled' } });
-    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
-    fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));
-
-    expect(screen.getByText('候補は1件です。この店に決定できます。')).toBeInTheDocument();
-    expect(screen.queryByText('ルーレット演出中')).not.toBeInTheDocument();
-  });
-
-  it('does not draw an unselected restaurant', async () => {
+  it('clears the cuisine result when a location condition changes', () => {
     render(<App />);
 
     chooseCuisine('ラーメン', '麺');
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
-    await screen.findByRole('button', { name: '店舗ルーレットを回す' });
-    screen.getAllByRole('checkbox').forEach((checkbox) => fireEvent.click(checkbox));
-    fireEvent.click(screen.getByRole('button', { name: '店舗ルーレットを回す' }));
-
-    expect(screen.getByText('条件に合う店舗がありません')).toBeInTheDocument();
-  });
-
-  it('clears old restaurant candidates when the cuisine condition changes', async () => {
-    render(<App />);
-
-    chooseCuisine('ラーメン', '麺');
-    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
-    await screen.findByRole('button', { name: '店舗ルーレットを回す' });
-    fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
-
-    expect(screen.queryByText('麺処ひなた')).not.toBeInTheDocument();
-  });
-
-  it('clears generated results when a location condition changes', async () => {
-    render(<App />);
-
-    chooseCuisine('ラーメン', '麺');
-    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
-    await screen.findByRole('button', { name: '店舗ルーレットを回す' });
     fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: '場所を指定' }));
 
-    expect(screen.queryByRole('button', { name: '店舗ルーレットを回す' })).not.toBeInTheDocument();
-  });
-
-  it('lets the user choose a chain and then select a branch directly', async () => {
-    render(<App />);
-
-    chooseCuisine('ラーメン', '麺');
-    fireEvent.click(screen.getByRole('button', { name: 'チェーン・店舗を指定' }));
-    fireEvent.click(screen.getByRole('button', { name: '岐阜タンメン' }));
-    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
-
-    expect(await screen.findByRole('heading', { name: '利用可能な支店' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '岐阜タンメン 名古屋駅店を選ぶ' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '店舗ルーレットを回す' })).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: '岐阜タンメン 名古屋駅店を選ぶ' }));
-    expect(screen.getByRole('heading', { name: '岐阜タンメン 名古屋駅店' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '「ラーメン」' })).not.toBeInTheDocument();
   });
 
   it('registers group members and uses their weighted food candidates', () => {
@@ -211,13 +150,14 @@ describe('meal roulette user flows', () => {
     expect(screen.getByText('履歴店')).toBeInTheDocument();
   });
 
-  it('runs a roulette using saved restaurants only', async () => {
+  it('runs a roulette using a manually saved restaurant', () => {
     render(<App />);
 
-    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'みんなで' }));
+    fireEvent.click(screen.getByRole('button', { name: '店を決める' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '行きたい店名' }), { target: { value: '王将' } });
+    fireEvent.click(screen.getByRole('button', { name: '店候補を追加' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
-    fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: '行きたい店に保存' }));
     fireEvent.click(screen.getByRole('button', { name: '行きたい店' }));
 
@@ -264,18 +204,15 @@ describe('meal roulette user flows', () => {
     expect(screen.getByDisplayValue('栄駅')).toBeInTheDocument();
   });
 
-  it('offers map and navigation links for a restaurant result', async () => {
+  it('uses the cuisine and location in the direct Google Maps link', () => {
     render(<App />);
 
     chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '場所を指定' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '駅名・施設名・住所' }), { target: { value: '名古屋駅' } });
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
-    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
-    fireEvent.click(await screen.findByRole('button', { name: '店舗ルーレットを回す' }));
-
-    expect(screen.getAllByRole('status').some((element) => element.textContent?.includes('抽選中'))).toBe(true);
-    expect(screen.getByRole('link', { name: 'Googleマップで見る' })).toHaveAttribute('href', expect.stringContaining('google.com/maps'));
-    expect(screen.getByRole('link', { name: '経路を調べる' })).toHaveAttribute('href', expect.stringContaining('dir'));
-    expect(screen.getByRole('link', { name: 'Googleマップで見る' })).not.toHaveAttribute('target', '_blank');
-    expect(screen.getByRole('link', { name: '経路を調べる' })).not.toHaveAttribute('target', '_blank');
+    const link = screen.getByRole('link', { name: 'Googleマップで店を探す' });
+    expect(new URL(link.getAttribute('href') ?? '').searchParams.get('query')).toBe('ラーメン 名古屋駅');
   });
 });
