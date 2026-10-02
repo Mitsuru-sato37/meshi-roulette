@@ -262,5 +262,7 @@ describe('meal roulette user flows', () => {
     expect(screen.getAllByRole('status').some((element) => element.textContent?.includes('抽選中'))).toBe(true);
     expect(screen.getByRole('link', { name: 'Googleマップで見る' })).toHaveAttribute('href', expect.stringContaining('google.com/maps'));
     expect(screen.getByRole('link', { name: '経路を調べる' })).toHaveAttribute('href', expect.stringContaining('dir'));
+    expect(screen.getByRole('link', { name: 'Googleマップで見る' })).not.toHaveAttribute('target', '_blank');
+    expect(screen.getByRole('link', { name: '経路を調べる' })).not.toHaveAttribute('target', '_blank');
   });
 });

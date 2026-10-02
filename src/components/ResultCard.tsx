@@ -28,8 +28,8 @@ export function ResultCard({ cuisine, restaurant, onCuisineDecision, onFindResta
         {hasMetadata && <><p className={finalClassName}>{restaurant.locationLabel} ・ {restaurant.travelSummary} ・ {restaurant.budgetLabel}</p>
         {restaurant.isOpen === false && <p className={`notice ${finalClassName ?? ''}`}>現在は営業時間外です</p>}
         <div className={`map-links ${finalClassName ?? ''}`}>
-          <a href={mapUrl} target="_blank" rel="noreferrer"><MapIcon />Googleマップで見る</a>
-          <a href={navigationUrl} target="_blank" rel="noreferrer"><NavigationIcon />経路を調べる</a>
+          <a href={mapUrl}><MapIcon />Googleマップで見る</a>
+          <a href={navigationUrl}><NavigationIcon />経路を調べる</a>
         </div></>}
         <div className={`action-stack ${finalClassName ?? ''}`}>
           <button className="primary-button" type="button" onClick={onRestaurantDecision}>この店に決定</button>
