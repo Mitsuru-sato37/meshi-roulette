@@ -2,6 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { createRestaurantSearchWorker } from './restaurantSearchWorker';
 
 describe('restaurant search worker', () => {
+  it('serves the bundled app shell from the Worker', async () => {
+    const worker = createRestaurantSearchWorker();
+    const response = await worker.fetch(new Request('https://example.test/'), {});
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
+    await expect(response.text()).resolves.toContain('<div id="root"></div>');
+  });
+
   it('keeps the Google key on the server and returns normalized candidates', async () => {
     const requestedUrls: string[] = [];
     const worker = createRestaurantSearchWorker(async (input) => {

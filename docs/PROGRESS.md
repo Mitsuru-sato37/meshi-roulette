@@ -32,11 +32,7 @@ Known implemented/defined areas include:
 
 ## External integration status
 
-The optional in-app restaurant-search path is implemented for car, walking, and bicycle route modes. It remains disabled on the hosted static site until a Google Maps Platform key is configured in the server runtime and the worker endpoint is published. Transit route mode deliberately falls back to Google Maps because Places routing summaries do not support transit detour filtering. The remaining deployment work is:
-
-- configure `GOOGLE_MAPS_PLATFORM_API_KEY` as a Site secret;
-- publish `dist/server/index.js` as the `/api/restaurant-search` Worker endpoint;
-- set `VITE_RESTAURANT_API_URL` only if the endpoint is hosted separately.
+The optional in-app restaurant-search path is implemented for car, walking, and bicycle route modes. The Worker build now serves the app shell and `/api/restaurant-search` from the same Site, with `GOOGLE_MAPS_PLATFORM_API_KEY` kept in the Site runtime. Transit route mode deliberately falls back to Google Maps because Places routing summaries do not support transit detour filtering. The app uses the same-origin Worker endpoint in production and can still accept `VITE_RESTAURANT_API_URL` when deployed separately.
 
 Do not treat those items as permission to change the product rules in `docs/product-spec.md`.
 

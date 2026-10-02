@@ -28,7 +28,9 @@ import type { RouletteRevealConfig } from './components/RouletteReveal';
 type ActiveReveal = RouletteRevealConfig & { kind: 'cuisine' | 'restaurant' };
 type AppProps = { restaurantSearchEndpoint?: string };
 
-export function App({ restaurantSearchEndpoint = import.meta.env.VITE_RESTAURANT_API_URL?.trim() }: AppProps = {}) {
+const defaultRestaurantSearchEndpoint = import.meta.env.VITE_RESTAURANT_API_URL?.trim() || (import.meta.env.PROD ? '/api/restaurant-search' : undefined);
+
+export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint }: AppProps = {}) {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [selection, setSelection] = useState<CuisineSelection>({ include: [], exclude: [] });
   const [cuisineResult, setCuisineResult] = useState<Food | null>(null);
