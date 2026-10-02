@@ -15,4 +15,10 @@ describe('ResultCard roulette reveal', () => {
 
     expect(screen.getByRole('button', { name: '道中の店を探す' })).toBeInTheDocument();
   });
+
+  it('shows the detour on a route-search result', () => {
+    render(<ResultCard restaurant={{ id: 'route-shop', name: '道中の店', foodIds: ['ramen'], locationLabel: '名古屋市', travelSummary: '約5分', routeDetourMinutes: 3, isOpen: true, budgetLabel: '2,000円前後' }} />);
+
+    expect(screen.getByText(/寄り道約3分/)).toBeInTheDocument();
+  });
 });

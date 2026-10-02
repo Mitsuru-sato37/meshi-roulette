@@ -27,7 +27,7 @@ export function ResultCard({ cuisine, cuisineLocationLabel, routeSearchAvailable
         <p className="eyebrow">今回の候補</p>
         {reveal && onRevealComplete && <RouletteReveal {...reveal} onComplete={onRevealComplete} />}
         <h2 className={finalClassName}>{restaurant.name}</h2>
-        {hasMetadata && <><p className={finalClassName}>{restaurant.locationLabel} ・ {restaurant.travelSummary} ・ {restaurant.budgetLabel}</p>
+        {hasMetadata && <><p className={finalClassName}>{[restaurant.locationLabel, restaurant.travelSummary, restaurant.routeDetourMinutes != null ? `寄り道約${restaurant.routeDetourMinutes}分` : null, restaurant.budgetLabel].filter(Boolean).join(' ・ ')}</p>
         {restaurant.isOpen === false && <p className={`notice ${finalClassName ?? ''}`}>現在は営業時間外です</p>}
         <div className={`map-links ${finalClassName ?? ''}`}>
           <a href={mapUrl}><MapIcon />Googleマップで見る</a>
