@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 
 describe('meal roulette user flows', () => {
@@ -214,5 +214,22 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     const link = screen.getByRole('link', { name: 'Googleマップで店を探す' });
     expect(new URL(link.getAttribute('href') ?? '').searchParams.get('query')).toBe('ラーメン 名古屋駅');
+  });
+
+  it('searches restaurants along the selected route through the configured server', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ candidates: [{ id: 'route-shop', name: '道中の店', foodIds: ['ramen'], locationLabel: '栄', travelSummary: '約5分', isOpen: true, budgetLabel: '2,000円前後' }] }), { status: 200 }));
+    render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
+
+    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '道中の店を探す' }));
+
+    await waitFor(() => expect(screen.getByText('道中の候補を1件取得しました')).toBeInTheDocument());
+    expect(fetchMock).toHaveBeenCalledWith('/api/restaurant-search', expect.objectContaining({ method: 'POST' }));
+    fetchMock.mockRestore();
   });
 });

@@ -9,4 +9,10 @@ describe('ResultCard roulette reveal', () => {
     expect(screen.getByRole('heading', { name: '「ピザ」' })).toHaveClass('result-card__final--hidden');
     expect(screen.getByRole('button', { name: 'この料理に決定' }).parentElement).toHaveClass('result-card__final--hidden');
   });
+
+  it('offers an in-app route search when the route API is configured', () => {
+    render(<ResultCard cuisine={{ id: 'ramen', label: 'ラーメン', parentIds: [], children: [], searchTerms: [], aliases: [], tags: [] }} routeSearchAvailable onRouteSearch={() => undefined} />);
+
+    expect(screen.getByRole('button', { name: '道中の店を探す' })).toBeInTheDocument();
+  });
 });

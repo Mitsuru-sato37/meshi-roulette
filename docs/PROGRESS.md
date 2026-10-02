@@ -1,7 +1,7 @@
 # Progress
 
 Status: Current handoff
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
 ## Current visual pass
 
@@ -26,16 +26,17 @@ Known implemented/defined areas include:
 - candidate generation separated from random selection;
 - explicit result confirmation before history persistence;
 - fixture-based brand/store flow, including the current 岐阜タンメン example;
-- server-side restaurant-search handler entry point.
+- server-side restaurant-search handler entry point;
+- route-aware Google Places + Routes provider and Cloudflare Worker adapter;
+- route candidate filtering by explicit detour limits with no hidden weighting.
 
-## External integration still incomplete
+## External integration status
 
-The optional in-app restaurant-search path is deferred; the current cuisine flow sends users to Google Maps directly. If in-app candidates are added later, provider work will include:
+The optional in-app restaurant-search path is implemented for car, walking, and bicycle route modes. It remains disabled on the hosted static site until a Google Maps Platform key is configured in the server runtime and the worker endpoint is published. Transit route mode deliberately falls back to Google Maps because Places routing summaries do not support transit detour filtering. The remaining deployment work is:
 
-- Google Places-backed brand/store identification;
-- current-location and route-aware search;
-- opening-hours and route-condition handling;
-- secure server-side API-key configuration.
+- configure `GOOGLE_MAPS_PLATFORM_API_KEY` as a Site secret;
+- publish `dist/server/index.js` as the `/api/restaurant-search` Worker endpoint;
+- set `VITE_RESTAURANT_API_URL` only if the endpoint is hosted separately.
 
 Do not treat those items as permission to change the product rules in `docs/product-spec.md`.
 
@@ -61,7 +62,8 @@ Before stopping a meaningful Codex session, update this file with:
 ## Latest handoff
 
 - Active branch: `codex/award-level-ui`.
+- Completed: added Routes API baseline route calculation, Places Search Along Route, routing-summary detour filtering, route-query construction, and a server-only Worker adapter; route searches keep the API key out of the browser and fall back to Google Maps on missing configuration or errors.
 - Completed: replaced the nostalgic paper-ticket styling with a mobile-first ticket composition, grouped cuisine navigation backed by the master-data hierarchy, stacked ticket-like cuisine rows, and a matching dark result stage; added target-aware group mode with food roulette or direct store roulette from typed, history, and saved candidates; direct store candidates keep metadata unavailable and skip provider-derived map/details; added a shared candidate reveal animation to cuisine, restaurant, group-store, and saved-store roulette flows; hid the final result content during the reveal so the winner is not spoiled; upgraded the reveal into a slot-style candidate reel with a visible progress meter and kept the winner out of the rolling labels; upgraded restaurant map actions to same-tab Google Maps universal links that use provider place IDs and coordinates when available; added a controlled favicon and install manifest.
 - Completed: replaced the nostalgic paper-ticket styling with a mobile-first ticket composition, grouped cuisine navigation backed by the master-data hierarchy, stacked ticket-like cuisine rows, and a matching dark result stage; added target-aware group mode with food roulette or direct store roulette from typed, history, and saved candidates; direct store candidates keep metadata unavailable and skip provider-derived map/details; added a shared candidate reveal animation to cuisine, restaurant, group-store, and saved-store roulette flows; hid the final result content during the reveal so the winner is not spoiled; upgraded the reveal into a slot-style candidate reel with a visible progress meter and kept the winner out of the rolling labels; changed cuisine results to direct same-tab Google Maps search links with an optional specified location; removed the app-side cuisine restaurant candidate and fixture search UI while keeping group store roulette.
-- Verification: `npm test -- --run` (68 tests passed), `npm run build` (passed), and `git diff --check` (passed).
+- Verification: `npm test -- --run` (73 tests passed), `npm run build` (client and Worker bundles passed), and `git diff --check` (pending after commit).
 - Published: production version 15 from commit `708d4bd`.

@@ -21,11 +21,14 @@ import { FoodPickerSheet } from './components/FoodPickerSheet';
 import { GroupPanel } from './components/GroupPanel';
 import { buildGroupFoodCandidates, buildGroupRestaurantCandidates, createManualRestaurantCandidate } from './domain/groupCandidates';
 import { requestCurrentLocation } from './application/location';
+import { buildRouteRestaurantQuery } from './application/routeSearch';
+import { createRemoteRestaurantProvider } from './providers/remoteRestaurantProvider';
 import type { RouletteRevealConfig } from './components/RouletteReveal';
 
 type ActiveReveal = RouletteRevealConfig & { kind: 'cuisine' | 'restaurant' };
+type AppProps = { restaurantSearchEndpoint?: string };
 
-export function App() {
+export function App({ restaurantSearchEndpoint = import.meta.env.VITE_RESTAURANT_API_URL?.trim() }: AppProps = {}) {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [selection, setSelection] = useState<CuisineSelection>({ include: [], exclude: [] });
   const [cuisineResult, setCuisineResult] = useState<Food | null>(null);
@@ -45,8 +48,10 @@ export function App() {
   const [groupTarget, setGroupTarget] = useState<GroupTarget>('food');
   const [activeReveal, setActiveReveal] = useState<ActiveReveal | null>(null);
   const [savedReveal, setSavedReveal] = useState<RouletteRevealConfig | null>(null);
+  const [isSearchingRestaurants, setIsSearchingRestaurants] = useState(false);
   const [version, setVersion] = useState(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
+  const routeSearchProvider = useMemo(() => restaurantSearchEndpoint ? createRemoteRestaurantProvider({ endpoint: restaurantSearchEndpoint }) : null, [restaurantSearchEndpoint]);
   const cuisineCandidates = homeState.mode === 'group' && groupTarget === 'food' && groupEntries.length > 0
     ? buildGroupFoodCandidates(groupEntries, foodCatalog.foods)
     : buildCuisineCandidates(selection, foodCatalog);
@@ -119,6 +124,33 @@ export function App() {
     setActiveReveal(groupRestaurantCandidates.length === 1 ? null : { kind: 'restaurant', items: groupRestaurantCandidates.map((candidate) => candidate.name), winnerLabel: winner.name });
   };
   const drawPrimary = () => homeState.mode === 'group' && groupTarget === 'restaurant' ? drawGroupRestaurant() : drawCuisine();
+  const searchRouteRestaurants = async () => {
+    if (!cuisineResult || homeState.location.mode !== 'route' || !homeState.location.route) return;
+    if (!routeSearchProvider) {
+      setMessage('道中検索APIが未設定です。Googleマップで店を探してください');
+      return;
+    }
+    setIsSearchingRestaurants(true);
+    setRestaurantCandidates([]);
+    setSelectedRestaurantIds([]);
+    setExcludedRestaurantIds([]);
+    setRestaurantResult(null);
+    try {
+      const candidates = await routeSearchProvider.search(buildRouteRestaurantQuery({
+        foodId: cuisineResult.id,
+        locationLabel: homeState.location.label,
+        route: homeState.location.route,
+        transport: homeState.conditions.transport,
+      }));
+      setRestaurantCandidates(candidates);
+      setSelectedRestaurantIds(candidates.map((candidate) => candidate.id));
+      setMessage(candidates.length > 0 ? `道中の候補を${candidates.length}件取得しました` : '寄り道上限内に条件に合う店舗がありません');
+    } catch {
+      setMessage('道中の店舗情報を取得できませんでした。Googleマップで店を探してください');
+    } finally {
+      setIsSearchingRestaurants(false);
+    }
+  };
   const decideCuisine = () => {
     if (!cuisineResult) return;
     recordDecision({ type: 'cuisine', id: cuisineResult.id, label: cuisineResult.label, sessionSnapshot: buildSessionSnapshot([cuisineResult.id]) }, store);
@@ -216,7 +248,8 @@ export function App() {
           <button className="primary-button primary-button--hero" type="button" onClick={drawPrimary}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
         </div>
       </div>
-      {cuisineResult && <ResultCard cuisine={cuisineResult} cuisineLocationLabel={homeState.location.mode === 'specified' ? homeState.location.label : undefined} reveal={activeReveal?.kind === 'cuisine' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onCuisineDecision={decideCuisine} onReroll={drawCuisine} />}
+      {cuisineResult && <ResultCard cuisine={cuisineResult} cuisineLocationLabel={homeState.location.mode === 'specified' ? homeState.location.label : undefined} routeSearchAvailable={homeState.location.mode === 'route' && Boolean(routeSearchProvider)} onRouteSearch={searchRouteRestaurants} reveal={activeReveal?.kind === 'cuisine' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onCuisineDecision={decideCuisine} onReroll={drawCuisine} />}
+      {isSearchingRestaurants && <p className="status-message" role="status">道中の店舗を探しています…</p>}
       {restaurantResult && <ResultCard restaurant={restaurantResult} reveal={activeReveal?.kind === 'restaurant' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
       {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
       {message && <p className="status-message" role="status">{message}</p>}

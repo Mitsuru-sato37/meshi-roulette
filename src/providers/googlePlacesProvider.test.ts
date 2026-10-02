@@ -32,17 +32,45 @@ describe('google places provider', () => {
   });
 
   it('includes route endpoints and detour limit in a route search request', async () => {
-    let requestBody = '';
+    const requestBodies: string[] = [];
     const provider = createGooglePlacesProvider({
       apiKey: 'test-key',
-      fetcher: async (_input, init) => { requestBody = String(init?.body); return new Response(JSON.stringify({ places: [] }), { status: 200 }); },
+      fetcher: async (input, init) => {
+        requestBodies.push(String(init?.body));
+        if (String(input).includes('computeRoutes')) {
+          return new Response(JSON.stringify({ routes: [{ duration: '600s', polyline: { encodedPolyline: 'encoded-route' } }] }), { status: 200 });
+        }
+        return new Response(JSON.stringify({
+          places: [
+            { id: 'places/1', displayName: { text: '道中の店A' }, formattedAddress: '名古屋市', location: { latitude: 35.17, longitude: 136.88 } },
+            { id: 'places/2', displayName: { text: '道中の店B' }, formattedAddress: '名古屋市', location: { latitude: 35.18, longitude: 136.89 } },
+          ],
+          routingSummaries: [
+            { legs: [{ duration: '300s' }, { duration: '360s' }] },
+            { legs: [{ duration: '480s' }, { duration: '720s' }] },
+          ],
+        }), { status: 200 });
+      },
     });
 
-    await provider.search({ foodIds: ['ramen'], route: { origin: '名古屋駅', destination: '栄駅', maxDetourMinutes: 10 } });
+    await expect(provider.search({ foodIds: ['ramen'], route: { origin: '名古屋駅', destination: '栄駅', maxDetourMinutes: 2 } })).resolves.toEqual([
+      expect.objectContaining({ id: 'places/1', name: '道中の店A', routeDetourMinutes: 1 }),
+    ]);
 
-    const body = JSON.parse(requestBody);
-    expect(body.textQuery).toContain('名古屋駅');
-    expect(body.textQuery).toContain('栄駅');
-    expect(body.route.maxDetourMinutes).toBe(10);
+    const routeBody = JSON.parse(requestBodies[0]);
+    expect(routeBody.origin.address).toBe('名古屋駅');
+    expect(routeBody.destination.address).toBe('栄駅');
+    expect(routeBody.travelMode).toBe('DRIVE');
+    const searchBody = JSON.parse(requestBodies[1]);
+    expect(searchBody.searchAlongRouteParameters.polyline.encodedPolyline).toBe('encoded-route');
+    expect(searchBody.textQuery).toContain('ラーメン');
+    expect(searchBody.textQuery).not.toContain('道中で探す');
+  });
+
+  it('does not silently convert transit route searches into another travel mode', async () => {
+    const fetcher = async () => new Response('{}', { status: 200 });
+    const provider = createGooglePlacesProvider({ apiKey: 'test-key', fetcher });
+
+    await expect(provider.search({ foodIds: ['ramen'], route: { origin: '名古屋駅', destination: '栄駅', maxDetourMinutes: 10, travelMode: 'TRANSIT' } })).rejects.toThrow('Transit route search is not supported');
   });
 });

@@ -51,9 +51,9 @@ npm install
 npm run dev
 ```
 
-料理ルーレットの結果から店舗を探す場合は、選んだ料理と指定場所をGoogleマップへ直接渡します。アプリ内で店舗候補を生成・抽選する店舗検索サーバー（`VITE_RESTAURANT_API_URL`）やPlacesキーは、将来アプリ内検索を追加する場合の拡張用です。みんなで店を決めるモードでは、入力・履歴・保存済みの店をアプリ内でルーレットできます。
+料理ルーレットの結果から店舗を探す場合は、通常は選んだ料理と指定場所をGoogleマップへ直接渡します。道中モードでは、店舗検索サーバー（`VITE_RESTAURANT_API_URL`、未指定時は同一サイトの`/api/restaurant-search`）が設定されていれば、Routes APIで通常ルートを計算し、Places APIのSearch Along Routeで候補を取得します。車・徒歩・自転車は候補を寄り道上限で絞り込んだ後、既存のルーレットで同確率に抽選します。公共交通の寄り道判定はPlaces APIの制約があるため、Googleマップへの導線へ戻します。検索サーバーが利用できない場合もGoogleマップへの導線へ戻ります。みんなで店を決めるモードでは、入力・履歴・保存済みの店をアプリ内でルーレットできます。
 
-サーバー側の入口には `src/server/restaurantSearchHandler.ts` を利用できます。Vercel Functions、Cloudflare Workers、Node系のHTTPアダプターから呼び出し、`RestaurantProvider` にPlaces／Routes実装を注入する想定です。
+サーバー側の入口には `src/server/restaurantSearchWorker.ts` と `src/server/restaurantSearchHandler.ts` を利用できます。Cloudflare WorkersなどのHTTPランタイムから呼び出し、`GOOGLE_MAPS_PLATFORM_API_KEY`をサーバー環境変数へ設定してください。キーはブラウザへ公開しません。
 
 以前のFixtureによるチェーン・支店検索コードは、現在の料理→店舗フローでは使用しません。Googleマップ側の検索結果を使い、アプリ内ではみんなで指定した店だけをルーレット対象にします。
 

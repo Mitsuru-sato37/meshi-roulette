@@ -5,6 +5,8 @@ import { RouletteReveal, type RouletteRevealConfig } from './RouletteReveal';
 type ResultCardProps = {
   cuisine?: Food | null;
   cuisineLocationLabel?: string | null;
+  routeSearchAvailable?: boolean;
+  onRouteSearch?: () => void;
   restaurant?: RestaurantCandidate | null;
   onCuisineDecision?: () => void;
   onRestaurantDecision?: () => void;
@@ -15,7 +17,7 @@ type ResultCardProps = {
   onRevealComplete?: () => void;
 };
 
-export function ResultCard({ cuisine, cuisineLocationLabel, restaurant, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
+export function ResultCard({ cuisine, cuisineLocationLabel, routeSearchAvailable, onRouteSearch, restaurant, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
   const finalClassName = reveal ? 'result-card__final--hidden' : undefined;
   if (restaurant) {
     const hasMetadata = restaurant.metadataAvailable !== false;
@@ -50,6 +52,7 @@ export function ResultCard({ cuisine, cuisineLocationLabel, restaurant, onCuisin
       <h2 className={finalClassName}>「{cuisine.label}」</h2>
       <div className={`action-stack ${finalClassName ?? ''}`}>
         <button className="primary-button" type="button" onClick={onCuisineDecision}>この料理に決定</button>
+        {routeSearchAvailable && onRouteSearch && <button className="secondary-button result-card__map-button" type="button" onClick={onRouteSearch}><MapIcon />道中の店を探す</button>}
         <a className="secondary-button result-card__map-button" href={cuisineMapUrl}><MapIcon />Googleマップで店を探す</a>
         <button className="text-button" type="button" onClick={onReroll}>もう一度回す</button>
       </div>
