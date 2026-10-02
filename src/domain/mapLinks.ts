@@ -5,6 +5,13 @@ type MapCandidate = Pick<RestaurantCandidate, 'name' | 'locationLabel' | 'locati
 type CuisineSearch = {
   label: string;
   locationLabel?: string | null;
+  takeoutRequired?: boolean;
+};
+
+export type NavigationTravelMode = 'driving' | 'walking' | 'bicycling' | 'transit';
+
+type MapLinkOptions = {
+  travelMode?: NavigationTravelMode;
 };
 
 function coordinateLabel(candidate: MapCandidate): string | null {
@@ -24,7 +31,7 @@ function googlePlaceId(candidate: MapCandidate): string | null {
   return candidate.providerPlaceId.replace(/^places\//, '');
 }
 
-export function buildMapLinks(candidate: MapCandidate) {
+export function buildMapLinks(candidate: MapCandidate, options: MapLinkOptions = {}) {
   const destination = destinationLabel(candidate);
   const coordinates = coordinateLabel(candidate);
   const searchParams = new URLSearchParams({ api: '1', query: destination });
@@ -34,7 +41,7 @@ export function buildMapLinks(candidate: MapCandidate) {
   const navigationParams = new URLSearchParams({
     api: '1',
     destination: coordinates ?? destination,
-    travelmode: 'walking',
+    travelmode: options.travelMode ?? 'walking',
   });
 
   return {
@@ -43,7 +50,7 @@ export function buildMapLinks(candidate: MapCandidate) {
   };
 }
 
-export function buildCuisineSearchUrl({ label, locationLabel }: CuisineSearch): string {
-  const query = [label, locationLabel].filter(Boolean).join(' ');
+export function buildCuisineSearchUrl({ label, locationLabel, takeoutRequired }: CuisineSearch): string {
+  const query = [label, takeoutRequired ? 'テイクアウト' : null, locationLabel].filter(Boolean).join(' ');
   return `https://www.google.com/maps/search/?${new URLSearchParams({ api: '1', query }).toString()}`;
 }

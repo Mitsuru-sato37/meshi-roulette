@@ -8,6 +8,7 @@ type GooglePlace = {
   formattedAddress?: string;
   currentOpeningHours?: { openNow?: boolean };
   priceLevel?: string;
+  takeout?: boolean;
   location?: { latitude?: number; longitude?: number };
 };
 
@@ -44,7 +45,11 @@ function durationMinutes(value: number | null): number | null {
 function searchText(query: RestaurantQuery): string {
   return [
     query.route ? undefined : query.locationLabel,
-    query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' '),
+    query.conditions?.takeoutRequired ? 'テイクアウト' : undefined,
+    query.foodIds.flatMap((id) => {
+      const food = foodCatalog.foods.find((candidate) => candidate.id === id);
+      return [...new Set([food?.label ?? id, ...(food?.searchTerms ?? []), ...(food?.aliases ?? [])])].slice(0, 4);
+    }).join(' '),
   ].filter(Boolean).join(' ');
 }
 
@@ -68,6 +73,7 @@ function normalizePlace(place: GooglePlace, query: RestaurantQuery, routeSummary
     routeDetourMinutes,
     isOpen: place.currentOpeningHours?.openNow ?? null,
     budgetLabel: priceLabel(place.priceLevel),
+    supportsTakeout: place.takeout ?? null,
     location: place.location,
   };
 }
@@ -105,7 +111,12 @@ export function createGooglePlacesProvider(config: GooglePlacesConfig): Restaura
         if (!encodedPolyline || baselineDurationSeconds == null) throw new Error('Google Routes response did not include a usable route');
       }
 
-      const body: Record<string, unknown> = { textQuery: searchText(query) };
+      const body: Record<string, unknown> = {
+        textQuery: searchText(query),
+        includedType: 'restaurant',
+        languageCode: 'ja',
+        regionCode: 'JP',
+      };
       if (query.route && encodedPolyline) {
         body.searchAlongRouteParameters = { polyline: { encodedPolyline } };
         body.maxResultCount = 20;
@@ -113,8 +124,8 @@ export function createGooglePlacesProvider(config: GooglePlacesConfig): Restaura
         body.locationBias = { circle: { center: { latitude: query.location.latitude, longitude: query.location.longitude }, radius: 5000 } };
       }
       const fieldMask = query.route
-        ? 'places.id,places.displayName,places.formattedAddress,places.currentOpeningHours,places.priceLevel,places.location,routingSummaries'
-        : 'places.id,places.displayName,places.formattedAddress,places.currentOpeningHours,places.priceLevel,places.location';
+        ? 'places.id,places.displayName,places.formattedAddress,places.currentOpeningHours,places.priceLevel,places.takeout,places.location,routingSummaries'
+        : 'places.id,places.displayName,places.formattedAddress,places.currentOpeningHours,places.priceLevel,places.takeout,places.location';
       const response = await fetcher(placesEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': config.apiKey, 'X-Goog-FieldMask': fieldMask },
@@ -123,8 +134,14 @@ export function createGooglePlacesProvider(config: GooglePlacesConfig): Restaura
       if (!response.ok) throw new Error(`Google Places request failed: ${response.status}`);
       const data = await response.json() as GooglePlacesResponse;
       const candidates = (data.places ?? []).map((place, index) => normalizePlace(place, query, query.route ? data.routingSummaries?.[index] : undefined, baselineDurationSeconds)).filter((candidate): candidate is RestaurantCandidate => candidate !== null);
-      if (!query.route) return candidates;
-      return candidates.filter((candidate) => candidate.routeDetourMinutes != null && candidate.routeDetourMinutes <= query.route!.maxDetourMinutes);
+      const filtered = candidates.filter((candidate) => {
+        if (query.conditions?.takeoutRequired && candidate.supportsTakeout !== true) return false;
+        if (query.conditions?.travelTimeMax != null && (candidate.travelMinutes == null || candidate.travelMinutes > query.conditions.travelTimeMax)) return false;
+        if (query.conditions?.eatingTime === 'now' && candidate.isOpen !== true) return false;
+        return true;
+      });
+      if (!query.route) return filtered;
+      return filtered.filter((candidate) => candidate.routeDetourMinutes != null && candidate.routeDetourMinutes <= query.route!.maxDetourMinutes);
     },
   };
 }

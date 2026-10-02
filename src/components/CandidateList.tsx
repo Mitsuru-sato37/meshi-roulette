@@ -21,7 +21,7 @@ export function CandidateList({ candidates, excludedIds, selectedIds, onToggleSe
         {candidates.map((candidate) => (
           <label key={candidate.id} className={`candidate-row${excludedIds.includes(candidate.id) ? ' candidate-row--excluded' : ''}`}>
             <input type="checkbox" checked={selectedIds.includes(candidate.id)} onChange={() => onToggleSelected(candidate.id)} />
-            <span><strong>{candidate.name}</strong><small>{candidate.locationLabel} ・ {candidate.travelSummary} ・ {candidate.budgetLabel}</small></span>
+            <span><strong>{candidate.name}</strong><small>{[candidate.locationLabel, candidate.travelSummary, candidate.routeDetourMinutes != null ? `寄り道約${candidate.routeDetourMinutes}分` : null, candidate.budgetLabel].filter(Boolean).join(' ・ ')}</small></span>
           </label>
         ))}
       </div>

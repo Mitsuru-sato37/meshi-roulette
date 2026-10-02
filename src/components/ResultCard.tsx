@@ -1,13 +1,15 @@
 import type { Food, RestaurantCandidate } from '../domain/types';
-import { buildCuisineSearchUrl, buildMapLinks } from '../domain/mapLinks';
+import { buildCuisineSearchUrl, buildMapLinks, type NavigationTravelMode } from '../domain/mapLinks';
 import { RouletteReveal, type RouletteRevealConfig } from './RouletteReveal';
 
 type ResultCardProps = {
   cuisine?: Food | null;
   cuisineLocationLabel?: string | null;
+  cuisineTakeoutRequired?: boolean;
   routeSearchAvailable?: boolean;
   onRouteSearch?: () => void;
   restaurant?: RestaurantCandidate | null;
+  navigationTravelMode?: NavigationTravelMode;
   onCuisineDecision?: () => void;
   onRestaurantDecision?: () => void;
   onReroll?: () => void;
@@ -17,17 +19,17 @@ type ResultCardProps = {
   onRevealComplete?: () => void;
 };
 
-export function ResultCard({ cuisine, cuisineLocationLabel, routeSearchAvailable, onRouteSearch, restaurant, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
+export function ResultCard({ cuisine, cuisineLocationLabel, cuisineTakeoutRequired, routeSearchAvailable, onRouteSearch, restaurant, navigationTravelMode, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
   const finalClassName = reveal ? 'result-card__final--hidden' : undefined;
   if (restaurant) {
     const hasMetadata = restaurant.metadataAvailable !== false;
-    const { mapUrl, navigationUrl } = buildMapLinks(restaurant);
+    const { mapUrl, navigationUrl } = buildMapLinks(restaurant, { travelMode: navigationTravelMode });
     return (
       <section className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
         <p className="eyebrow">今回の候補</p>
         {reveal && onRevealComplete && <RouletteReveal {...reveal} onComplete={onRevealComplete} />}
         <h2 className={finalClassName}>{restaurant.name}</h2>
-        {hasMetadata && <><p className={finalClassName}>{restaurant.locationLabel} ・ {restaurant.travelSummary} ・ {restaurant.budgetLabel}</p>
+        {hasMetadata && <><p className={finalClassName}>{[restaurant.locationLabel, restaurant.travelSummary, restaurant.routeDetourMinutes != null ? `寄り道約${restaurant.routeDetourMinutes}分` : null, restaurant.budgetLabel].filter(Boolean).join(' ・ ')}</p>
         {restaurant.isOpen === false && <p className={`notice ${finalClassName ?? ''}`}>現在は営業時間外です</p>}
         <div className={`map-links ${finalClassName ?? ''}`}>
           <a href={mapUrl}><MapIcon />Googleマップで見る</a>
@@ -44,7 +46,7 @@ export function ResultCard({ cuisine, cuisineLocationLabel, routeSearchAvailable
   }
 
   if (!cuisine) return null;
-  const cuisineMapUrl = buildCuisineSearchUrl({ label: cuisine.label, locationLabel: cuisineLocationLabel });
+  const cuisineMapUrl = buildCuisineSearchUrl({ label: cuisine.label, locationLabel: cuisineLocationLabel, takeoutRequired: cuisineTakeoutRequired });
   return (
     <section className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
       <p className="eyebrow">今日のご飯は</p>

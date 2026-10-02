@@ -9,6 +9,11 @@ describe('buildCuisineSearchUrl', () => {
     expect(url.pathname).toBe('/maps/search/');
     expect(url.searchParams.get('query')).toBe('パスタ 名古屋駅');
   });
+
+  it('includes takeout in a route fallback search', () => {
+    const url = new URL(buildCuisineSearchUrl({ label: 'ラーメン', locationLabel: '名古屋駅 栄駅', takeoutRequired: true }));
+    expect(url.searchParams.get('query')).toBe('ラーメン テイクアウト 名古屋駅 栄駅');
+  });
 });
 
 describe('buildMapLinks', () => {
@@ -32,5 +37,10 @@ describe('buildMapLinks', () => {
 
     expect(mapUrl.searchParams.get('query')).toBe('麺処ひなた 駅前');
     expect(navigationUrl.searchParams.get('destination')).toBe('麺処ひなた 駅前');
+  });
+
+  it('uses the selected travel mode for navigation', () => {
+    const links = buildMapLinks({ name: '麺処テスト', locationLabel: '名古屋駅' }, { travelMode: 'driving' });
+    expect(new URL(links.navigationUrl).searchParams.get('travelmode')).toBe('driving');
   });
 });

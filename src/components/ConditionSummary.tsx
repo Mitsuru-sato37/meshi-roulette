@@ -5,6 +5,7 @@ type ConditionSummaryProps = { state: HomeSessionState; onFoodClick: () => void;
 
 export function ConditionSummary({ state, onFoodClick, onLocationClick, onConditionsClick, showFood = true }: ConditionSummaryProps) {
   const summaries = summarizeConditions(state);
+  const showProviderHint = state.location.mode === 'auto' || state.location.mode === 'current';
   return (
     <section className="panel condition-panel" aria-label="条件">
       <div className={showFood ? 'condition-row' : 'condition-row condition-row--single'}>
@@ -19,7 +20,7 @@ export function ConditionSummary({ state, onFoodClick, onLocationClick, onCondit
       <div className="condition-chips" aria-label="設定中の条件">
         {summaries.slice(2).map((summary) => <span key={summary} className="condition-chip">{summary}</span>)}
       </div>
-      <p className="muted provider-hint">店舗検索は場所を指定すると利用できます</p>
+      {showProviderHint && <p className="muted provider-hint">店舗検索は場所を指定すると利用できます</p>}
     </section>
   );
 }
