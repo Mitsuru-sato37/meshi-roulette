@@ -198,6 +198,7 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
     fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
     fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '道中の移動手段' }), { target: { value: 'walk' } });
     fireEvent.change(screen.getByRole('combobox', { name: '寄り道上限' }), { target: { value: '10' } });
 
     expect(screen.getByDisplayValue('名古屋駅')).toBeInTheDocument();
@@ -225,11 +226,28 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
     fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
     fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '道中の移動手段' }), { target: { value: 'walk' } });
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(await screen.findByRole('button', { name: '道中の店を探す' }));
 
     await waitFor(() => expect(screen.getByText('道中の候補を1件取得しました')).toBeInTheDocument());
     expect(fetchMock).toHaveBeenCalledWith('/api/restaurant-search', expect.objectContaining({ method: 'POST' }));
+    fetchMock.mockRestore();
+  });
+
+  it('does not search a route until both endpoints are provided', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
+
+    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('combobox', { name: '道中の移動手段' }), { target: { value: 'walk' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '道中の店を探す' }));
+
+    expect(await screen.findByText('出発地と目的地を入力してください')).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
     fetchMock.mockRestore();
   });
 });

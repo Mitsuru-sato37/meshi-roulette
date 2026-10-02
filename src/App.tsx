@@ -127,7 +127,12 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
   };
   const drawPrimary = () => homeState.mode === 'group' && groupTarget === 'restaurant' ? drawGroupRestaurant() : drawCuisine();
   const searchRouteRestaurants = async () => {
-    if (!cuisineResult || homeState.location.mode !== 'route' || !homeState.location.route) return;
+    if (!cuisineResult || homeState.location.mode !== 'route') return;
+    const route = homeState.location.route;
+    if (!route || !route.origin.trim() || !route.destination.trim()) {
+      setMessage('出発地と目的地を入力してください');
+      return;
+    }
     if (!routeSearchProvider) {
       setMessage('道中検索APIが未設定です。Googleマップで店を探してください');
       return;
@@ -141,7 +146,7 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
       const candidates = await routeSearchProvider.search(buildRouteRestaurantQuery({
         foodId: cuisineResult.id,
         locationLabel: homeState.location.label,
-        route: homeState.location.route,
+        route,
         transport: homeState.conditions.transport,
       }));
       setRestaurantCandidates(candidates);
@@ -264,7 +269,7 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
         onConditionsClick={() => setShowConditionPanel((current) => !current)}
       />
       {showFoodPicker && homeState.mode !== 'group' && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
-      {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} route={homeState.location.route} onUseCurrentLocation={useCurrentLocation} onRouteChange={(route) => { setHomeState((current) => updateRoute(current, route)); clearGeneratedUi(); }} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
+      {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} route={homeState.location.route} transport={homeState.conditions.transport} onUseCurrentLocation={useCurrentLocation} onRouteChange={(route) => { setHomeState((current) => updateRoute(current, route)); clearGeneratedUi(); }} onTransportChange={(transport) => { setHomeState((current) => updateConditions(current, { transport })); clearGeneratedUi(); }} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
       {homeState.mode !== 'group' && <CuisinePicker groups={foodCatalog.groups} foods={foodCatalog.foods} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />}
     </section>

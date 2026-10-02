@@ -31,6 +31,18 @@ describe('google places provider', () => {
     expect(JSON.parse(requestBody).locationBias.circle.center).toEqual({ latitude: 35.17, longitude: 136.88 });
   });
 
+  it('uses the catalog search terms to improve cuisine matching', async () => {
+    let requestBody = '';
+    const provider = createGooglePlacesProvider({
+      apiKey: 'test-key',
+      fetcher: async (_input, init) => { requestBody = String(init?.body); return new Response(JSON.stringify({ places: [] }), { status: 200 }); },
+    });
+
+    await provider.search({ foodIds: ['tonkotsu_ramen'] });
+
+    expect(JSON.parse(requestBody).textQuery).toContain('博多ラーメン');
+  });
+
   it('includes route endpoints and detour limit in a route search request', async () => {
     const requestBodies: string[] = [];
     const provider = createGooglePlacesProvider({
@@ -65,6 +77,9 @@ describe('google places provider', () => {
     expect(searchBody.searchAlongRouteParameters.polyline.encodedPolyline).toBe('encoded-route');
     expect(searchBody.textQuery).toContain('ラーメン');
     expect(searchBody.textQuery).not.toContain('道中で探す');
+    expect(searchBody.includedType).toBe('restaurant');
+    expect(searchBody.languageCode).toBe('ja');
+    expect(searchBody.regionCode).toBe('JP');
   });
 
   it('does not silently convert transit route searches into another travel mode', async () => {

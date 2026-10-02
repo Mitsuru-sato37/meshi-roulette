@@ -44,7 +44,10 @@ function durationMinutes(value: number | null): number | null {
 function searchText(query: RestaurantQuery): string {
   return [
     query.route ? undefined : query.locationLabel,
-    query.foodIds.map((id) => foodCatalog.foods.find((food) => food.id === id)?.label ?? id).join(' '),
+    query.foodIds.flatMap((id) => {
+      const food = foodCatalog.foods.find((candidate) => candidate.id === id);
+      return [...new Set([food?.label ?? id, ...(food?.searchTerms ?? []), ...(food?.aliases ?? [])])].slice(0, 4);
+    }).join(' '),
   ].filter(Boolean).join(' ');
 }
 
@@ -105,7 +108,12 @@ export function createGooglePlacesProvider(config: GooglePlacesConfig): Restaura
         if (!encodedPolyline || baselineDurationSeconds == null) throw new Error('Google Routes response did not include a usable route');
       }
 
-      const body: Record<string, unknown> = { textQuery: searchText(query) };
+      const body: Record<string, unknown> = {
+        textQuery: searchText(query),
+        includedType: 'restaurant',
+        languageCode: 'ja',
+        regionCode: 'JP',
+      };
       if (query.route && encodedPolyline) {
         body.searchAlongRouteParameters = { polyline: { encodedPolyline } };
         body.maxResultCount = 20;
