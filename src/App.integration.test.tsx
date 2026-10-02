@@ -56,6 +56,19 @@ describe('meal roulette user flows', () => {
     expect(screen.getByRole('button', { name: 'ラーメンを候補から除外' })).toBeInTheDocument();
   });
 
+  it('offers a direct map search when the provider has no restaurant candidates', async () => {
+    render(<App />);
+
+    chooseCuisine('パスタ', 'イタリアン等');
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
+
+    expect(await screen.findByText('条件に合う店舗がありません')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'Googleマップでこの料理を探す' });
+    expect(link).toHaveAttribute('href', expect.stringContaining('google.com/maps/search'));
+    expect(link).not.toHaveAttribute('target', '_blank');
+  });
+
   it('does not show a roulette action for a single restaurant candidate', async () => {
     render(<App />);
 

@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { buildMapLinks } from './mapLinks';
+import { buildCuisineSearchUrl, buildMapLinks } from './mapLinks';
+
+describe('buildCuisineSearchUrl', () => {
+  it('builds a Google Maps search for the selected cuisine and location', () => {
+    const url = new URL(buildCuisineSearchUrl({ label: 'パスタ', locationLabel: '名古屋駅' }));
+
+    expect(url.hostname).toBe('www.google.com');
+    expect(url.pathname).toBe('/maps/search/');
+    expect(url.searchParams.get('query')).toBe('パスタ 名古屋駅');
+  });
+});
 
 describe('buildMapLinks', () => {
   it('uses the provider place id for map lookup and coordinates for navigation', () => {

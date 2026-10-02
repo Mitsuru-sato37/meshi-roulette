@@ -2,6 +2,11 @@ import type { RestaurantCandidate } from './types';
 
 type MapCandidate = Pick<RestaurantCandidate, 'name' | 'locationLabel' | 'location' | 'provider' | 'providerPlaceId'>;
 
+type CuisineSearch = {
+  label: string;
+  locationLabel?: string | null;
+};
+
 function coordinateLabel(candidate: MapCandidate): string | null {
   const latitude = candidate.location?.latitude;
   const longitude = candidate.location?.longitude;
@@ -36,4 +41,9 @@ export function buildMapLinks(candidate: MapCandidate) {
     mapUrl: `https://www.google.com/maps/search/?${searchParams.toString()}`,
     navigationUrl: `https://www.google.com/maps/dir/?${navigationParams.toString()}`,
   };
+}
+
+export function buildCuisineSearchUrl({ label, locationLabel }: CuisineSearch): string {
+  const query = [label, locationLabel].filter(Boolean).join(' ');
+  return `https://www.google.com/maps/search/?${new URLSearchParams({ api: '1', query }).toString()}`;
 }

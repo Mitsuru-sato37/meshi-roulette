@@ -28,6 +28,7 @@ import { GroupPanel } from './components/GroupPanel';
 import { buildGroupFoodCandidates, buildGroupRestaurantCandidates, createManualRestaurantCandidate } from './domain/groupCandidates';
 import { requestCurrentLocation } from './application/location';
 import type { RouletteRevealConfig } from './components/RouletteReveal';
+import { buildCuisineSearchUrl } from './domain/mapLinks';
 
 type ActiveReveal = RouletteRevealConfig & { kind: 'cuisine' | 'restaurant' };
 
@@ -274,6 +275,10 @@ export function App() {
       {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
       {message && <p className="status-message" role="status">{message}</p>}
       {providerNotice && <p className="status-message provider-notice" role="status">{providerNotice}</p>}
+      {cuisineResult && !restaurantResult && restaurantCandidates.length === 0 && message === '条件に合う店舗がありません' && <section className="map-search-fallback" aria-label="Googleマップで料理を探す">
+        <p>検索結果がないため、選んだ料理をGoogleマップで探せます。</p>
+        <a href={buildCuisineSearchUrl({ label: cuisineResult.label, locationLabel: homeState.location.label })}><MapSearchIcon />Googleマップでこの料理を探す</a>
+      </section>}
       {homeState.mode === 'group' && <GroupPanel entries={groupEntries} foods={foodCatalog.foods} target={groupTarget} savedRestaurants={savedRestaurants} historyRestaurants={historyRestaurants} onTargetChange={(target) => { setGroupTarget(target); clearGeneratedUi(); }} onChange={(entries) => { setGroupEntries(entries); clearGeneratedUi(); }} />}
       <ConditionSummary
         state={homeState}
@@ -300,4 +305,8 @@ export function App() {
       {version > -1 && null}
     </main>
   );
+}
+
+function MapSearchIcon() {
+  return <svg className="map-link__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z" /><circle cx="12" cy="9" r="2.25" /></svg>;
 }

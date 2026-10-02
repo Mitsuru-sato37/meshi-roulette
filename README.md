@@ -51,7 +51,7 @@ npm install
 npm run dev
 ```
 
-本番運用では、店舗検索サーバーのURLを `.env.local` の `VITE_RESTAURANT_API_URL` に設定してください。検索条件・ブランド・場所・道中条件をサーバーへ送り、APIキーをブラウザへ公開しない構成を推奨します。移行用に `VITE_GOOGLE_PLACES_API_KEY` も利用できますが、キー管理とRoutes APIの実装が必要です。どちらも未設定の場合はFixtureによる開発表示になります。
+本番運用では、店舗検索サーバーのURLを `.env.local` の `VITE_RESTAURANT_API_URL` に設定してください。検索条件・ブランド・場所・道中条件をサーバーへ送り、APIキーをブラウザへ公開しない構成を推奨します。移行用に `VITE_GOOGLE_PLACES_API_KEY` も利用できますが、キー管理とRoutes APIの実装が必要です。どちらも未設定の場合はFixtureによる開発表示になり、Fixtureにない料理は候補0件として表示されます。その場合も、選んだ料理をGoogleマップで直接探すリンクを表示します。
 
 サーバー側の入口には `src/server/restaurantSearchHandler.ts` を利用できます。Vercel Functions、Cloudflare Workers、Node系のHTTPアダプターから呼び出し、`RestaurantProvider` にPlaces／Routes実装を注入する想定です。
 
