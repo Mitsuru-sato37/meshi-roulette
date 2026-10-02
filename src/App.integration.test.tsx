@@ -235,7 +235,7 @@ describe('meal roulette user flows', () => {
     const candidateStage = screen.getByRole('region', { name: 'この中から店舗を決める' });
     const candidateHeading = within(candidateStage).getByRole('heading', { name: '条件に合う候補 1件' });
     const rouletteButton = within(candidateStage).getByRole('button', { name: 'この候補で店舗ルーレットを回す' });
-    expect(candidateHeading.compareDocumentPosition(rouletteButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(rouletteButton.compareDocumentPosition(candidateHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fetchMock.mockRestore();
   });
 

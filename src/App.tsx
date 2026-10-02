@@ -265,8 +265,8 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
             <h2 id="candidate-stage-heading">この中から店舗を決める</h2>
             <p className="muted">候補を確認して、必要ならチェックを外してからルーレットを回します。</p>
           </div>
-          <CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} />
           <button className="primary-button candidate-stage__cta" type="button" onClick={drawRestaurant}>この候補で店舗ルーレットを回す</button>
+          <CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} />
         </section>
       )}
       {message && <p className="status-message" role="status">{message}</p>}
