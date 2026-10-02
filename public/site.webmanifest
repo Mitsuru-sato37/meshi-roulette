@@ -1,0 +1,16 @@
+{
+  "name": "ご飯ルーレット",
+  "short_name": "ご飯ルーレット",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f5ef",
+  "theme_color": "#e35d3e",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
