@@ -225,10 +225,12 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
     fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
     fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'テイクアウト' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
 
     const link = screen.getByRole('link', { name: 'Googleマップで店を探す' });
-    expect(new URL(link.getAttribute('href') ?? '').searchParams.get('query')).toBe('ラーメン 名古屋駅 栄駅');
+    expect(new URL(link.getAttribute('href') ?? '').searchParams.get('query')).toBe('ラーメン テイクアウト 名古屋駅 栄駅');
     expect(screen.queryAllByText('店舗検索は場所を指定すると利用できます')).toHaveLength(0);
   });
 

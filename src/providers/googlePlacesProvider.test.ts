@@ -88,4 +88,23 @@ describe('google places provider', () => {
 
     await expect(provider.search({ foodIds: ['ramen'], route: { origin: '名古屋駅', destination: '栄駅', maxDetourMinutes: 10, travelMode: 'TRANSIT' } })).rejects.toThrow('Transit route search is not supported');
   });
+
+  it('searches and keeps only places that explicitly support takeout', async () => {
+    let requestBody = '';
+    const provider = createGooglePlacesProvider({
+      apiKey: 'test-key',
+      fetcher: async (_input, init) => {
+        requestBody = String(init?.body);
+        return new Response(JSON.stringify({ places: [
+          { id: 'places/takeout', displayName: { text: '持ち帰り店' }, takeout: true },
+          { id: 'places/dine-in', displayName: { text: '店内飲食のみ' }, takeout: false },
+        ] }), { status: 200 });
+      },
+    });
+
+    await expect(provider.search({ foodIds: ['ramen'], conditions: { takeoutRequired: true } })).resolves.toEqual([
+      expect.objectContaining({ id: 'places/takeout', supportsTakeout: true }),
+    ]);
+    expect(JSON.parse(requestBody).textQuery).toContain('テイクアウト');
+  });
 });

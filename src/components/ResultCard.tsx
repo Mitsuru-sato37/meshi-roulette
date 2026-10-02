@@ -5,6 +5,7 @@ import { RouletteReveal, type RouletteRevealConfig } from './RouletteReveal';
 type ResultCardProps = {
   cuisine?: Food | null;
   cuisineLocationLabel?: string | null;
+  cuisineTakeoutRequired?: boolean;
   routeSearchAvailable?: boolean;
   onRouteSearch?: () => void;
   restaurant?: RestaurantCandidate | null;
@@ -18,7 +19,7 @@ type ResultCardProps = {
   onRevealComplete?: () => void;
 };
 
-export function ResultCard({ cuisine, cuisineLocationLabel, routeSearchAvailable, onRouteSearch, restaurant, navigationTravelMode, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
+export function ResultCard({ cuisine, cuisineLocationLabel, cuisineTakeoutRequired, routeSearchAvailable, onRouteSearch, restaurant, navigationTravelMode, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
   const finalClassName = reveal ? 'result-card__final--hidden' : undefined;
   if (restaurant) {
     const hasMetadata = restaurant.metadataAvailable !== false;
@@ -45,7 +46,7 @@ export function ResultCard({ cuisine, cuisineLocationLabel, routeSearchAvailable
   }
 
   if (!cuisine) return null;
-  const cuisineMapUrl = buildCuisineSearchUrl({ label: cuisine.label, locationLabel: cuisineLocationLabel });
+  const cuisineMapUrl = buildCuisineSearchUrl({ label: cuisine.label, locationLabel: cuisineLocationLabel, takeoutRequired: cuisineTakeoutRequired });
   return (
     <section className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
       <p className="eyebrow">今日のご飯は</p>
