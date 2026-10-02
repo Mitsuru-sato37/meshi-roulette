@@ -64,4 +64,4 @@ Before stopping a meaningful Codex session, update this file with:
 - Completed: improved route search quality by requiring origin, destination, and transport before searching; added Japanese/JP restaurant filtering, catalog search terms and aliases, and visible detour minutes to each route candidate.
 - Completed: grouped route restaurant candidates into an explicit `候補から決める` stage below the cuisine result, with the store roulette CTA placed above the long candidate list so the primary action remains visible before scrolling.
 - Verification: `npm test -- --run` (80 tests passed) and `npm run build` (client and Worker bundles passed).
-- Published: production version 24 from commit `942f44e`; the Site runtime environment contains the server-only Maps key as a secret.
+- Published: production version 26 from commit `6a880be`; the Site runtime environment contains the server-only Maps key as a secret.
