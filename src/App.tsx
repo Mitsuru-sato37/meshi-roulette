@@ -258,7 +258,17 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
       {cuisineResult && <ResultCard cuisine={cuisineResult} cuisineLocationLabel={homeState.location.mode === 'specified' ? homeState.location.label : undefined} routeSearchAvailable={homeState.location.mode === 'route' && Boolean(routeSearchProvider)} onRouteSearch={searchRouteRestaurants} reveal={activeReveal?.kind === 'cuisine' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onCuisineDecision={decideCuisine} onReroll={drawCuisine} />}
       {isSearchingRestaurants && <p className="status-message" role="status">道中の店舗を探しています…</p>}
       {restaurantResult && <ResultCard restaurant={restaurantResult} reveal={activeReveal?.kind === 'restaurant' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
-      {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && <><CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} /><button className="primary-button" type="button" onClick={drawRestaurant}>店舗ルーレットを回す</button></>}
+      {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && (
+        <section className="candidate-stage" aria-labelledby="candidate-stage-heading">
+          <div className="candidate-stage__intro">
+            <p className="eyebrow">候補から決める</p>
+            <h2 id="candidate-stage-heading">この中から店舗を決める</h2>
+            <p className="muted">候補を確認して、必要ならチェックを外してからルーレットを回します。</p>
+          </div>
+          <CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} />
+          <button className="primary-button candidate-stage__cta" type="button" onClick={drawRestaurant}>この候補で店舗ルーレットを回す</button>
+        </section>
+      )}
       {message && <p className="status-message" role="status">{message}</p>}
       {homeState.mode === 'group' && <GroupPanel entries={groupEntries} foods={foodCatalog.foods} target={groupTarget} savedRestaurants={savedRestaurants} historyRestaurants={historyRestaurants} onTargetChange={(target) => { setGroupTarget(target); clearGeneratedUi(); }} onChange={(entries) => { setGroupEntries(entries); clearGeneratedUi(); }} />}
       <ConditionSummary

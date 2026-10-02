@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 
@@ -232,6 +232,10 @@ describe('meal roulette user flows', () => {
 
     await waitFor(() => expect(screen.getByText('道中の候補を1件取得しました')).toBeInTheDocument());
     expect(fetchMock).toHaveBeenCalledWith('/api/restaurant-search', expect.objectContaining({ method: 'POST' }));
+    const candidateStage = screen.getByRole('region', { name: 'この中から店舗を決める' });
+    const candidateHeading = within(candidateStage).getByRole('heading', { name: '条件に合う候補 1件' });
+    const rouletteButton = within(candidateStage).getByRole('button', { name: 'この候補で店舗ルーレットを回す' });
+    expect(candidateHeading.compareDocumentPosition(rouletteButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fetchMock.mockRestore();
   });
 
