@@ -6,27 +6,28 @@ function readClientAsset(url: string): string {
   return readFileSync(resolve('dist', url.replace(/^\//, '')), 'utf8');
 }
 
-function buildInlineSiteHtml(): { html: string; favicon: string; manifest: string } {
+function buildSiteAssets(): { html: string; script: string; stylesheet: string; favicon: string; manifest: string } {
   const source = readFileSync(resolve('dist/index.html'), 'utf8');
   const script = source.match(/<script[^>]+src="([^"]+)"[^>]*><\/script>/)?.[1];
   const stylesheet = source.match(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"[^>]*>/)?.[1];
-  const html = source
-    .replace(/<script[^>]+src="[^"]+"[^>]*><\/script>/, script ? `<script>${readClientAsset(script).replace(/<\/script>/gi, '<\\/script>')}</script>` : '')
-    .replace(/<link[^>]+rel="stylesheet"[^>]+href="[^"]+"[^>]*>/, stylesheet ? `<style>${readClientAsset(stylesheet)}</style>` : '');
   return {
-    html,
+    html: source,
+    script: script ? readClientAsset(script) : '',
+    stylesheet: stylesheet ? readClientAsset(stylesheet) : '',
     favicon: readClientAsset('/favicon.svg'),
     manifest: readClientAsset('/site.webmanifest'),
   };
 }
 
-const inlineSite = buildInlineSiteHtml();
+const siteAssets = buildSiteAssets();
 
 export default defineConfig({
   define: {
-    __MESHI_SITE_HTML__: JSON.stringify(inlineSite.html),
-    __MESHI_SITE_FAVICON__: JSON.stringify(inlineSite.favicon),
-    __MESHI_SITE_MANIFEST__: JSON.stringify(inlineSite.manifest),
+    __MESHI_SITE_HTML__: JSON.stringify(siteAssets.html),
+    __MESHI_SITE_SCRIPT__: JSON.stringify(siteAssets.script),
+    __MESHI_SITE_STYLES__: JSON.stringify(siteAssets.stylesheet),
+    __MESHI_SITE_FAVICON__: JSON.stringify(siteAssets.favicon),
+    __MESHI_SITE_MANIFEST__: JSON.stringify(siteAssets.manifest),
   },
   build: {
     ssr: 'src/server/restaurantSearchWorker.ts',

@@ -13,6 +13,14 @@ function siteHtml(): string {
   return typeof __MESHI_SITE_HTML__ === 'string' ? __MESHI_SITE_HTML__ : fallbackSiteHtml;
 }
 
+function siteScript(): string {
+  return typeof __MESHI_SITE_SCRIPT__ === 'string' ? __MESHI_SITE_SCRIPT__ : '';
+}
+
+function siteStyles(): string {
+  return typeof __MESHI_SITE_STYLES__ === 'string' ? __MESHI_SITE_STYLES__ : '';
+}
+
 function siteAsset(value: string, fallback: string): string {
   return typeof value === 'string' && value.length > 0 ? value : fallback;
 }
@@ -50,6 +58,12 @@ export function createRestaurantSearchWorker(fetcher: WorkerFetcher = fetch) {
       }
       if (url.pathname === '/site.webmanifest') {
         return new Response(siteAsset(siteManifest(), '{}'), { headers: { 'Content-Type': 'application/manifest+json; charset=utf-8' } });
+      }
+      if (url.pathname.startsWith('/assets/') && url.pathname.endsWith('.js')) {
+        return new Response(siteScript(), { headers: { 'Content-Type': 'text/javascript; charset=utf-8' } });
+      }
+      if (url.pathname.startsWith('/assets/') && url.pathname.endsWith('.css')) {
+        return new Response(siteStyles(), { headers: { 'Content-Type': 'text/css; charset=utf-8' } });
       }
       if (url.pathname !== '/api/restaurant-search') return jsonResponse({ error: 'Not found' }, 404);
       if (request.method === 'OPTIONS') return jsonResponse(null, 204);
