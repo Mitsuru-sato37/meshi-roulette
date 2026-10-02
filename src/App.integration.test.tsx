@@ -217,6 +217,21 @@ describe('meal roulette user flows', () => {
     expect(new URL(link.getAttribute('href') ?? '').searchParams.get('query')).toBe('ラーメン 名古屋駅');
   });
 
+  it('includes both route endpoints in the Google Maps fallback search', () => {
+    render(<App />);
+
+    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+
+    const link = screen.getByRole('link', { name: 'Googleマップで店を探す' });
+    expect(new URL(link.getAttribute('href') ?? '').searchParams.get('query')).toBe('ラーメン 名古屋駅 栄駅');
+    expect(screen.queryAllByText('店舗検索は場所を指定すると利用できます')).toHaveLength(0);
+  });
+
   it('searches restaurants along the selected route through the configured server', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ candidates: [{ id: 'route-shop', name: '道中の店', foodIds: ['ramen'], locationLabel: '栄', travelSummary: '約5分', isOpen: true, budgetLabel: '2,000円前後' }] }), { status: 200 }));
     render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
@@ -252,6 +267,24 @@ describe('meal roulette user flows', () => {
 
     expect(await screen.findByText('出発地と目的地を入力してください')).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
+  });
+
+  it('does not search a route until a transport mode is selected', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
+
+    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '道中の店を探す' }));
+
+    expect(await screen.findByText('移動手段を選択してください')).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.queryAllByText('店舗検索は場所を指定すると利用できます')).toHaveLength(0);
     fetchMock.mockRestore();
   });
 });

@@ -63,6 +63,18 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
     const resolved = [...savedRestaurants, ...fixtureRestaurants].find((candidate) => candidate.id === item.restaurantId || candidate.id === item.id);
     return resolved ?? createManualRestaurantCandidate(item.label);
   }).filter((candidate, index, candidates) => candidates.findIndex((item) => item.id === candidate.id) === index);
+  const cuisineMapLocationLabel = homeState.location.mode === 'specified'
+    ? homeState.location.label
+    : homeState.location.mode === 'route' && homeState.location.route
+      ? [homeState.location.route.origin, homeState.location.route.destination].filter(Boolean).join(' ')
+      : undefined;
+  const navigationTravelMode = homeState.conditions.transport === 'car'
+    ? 'driving'
+    : homeState.conditions.transport === 'bicycle'
+      ? 'bicycling'
+      : homeState.conditions.transport === 'transit'
+        ? 'transit'
+        : 'walking';
   const groupRestaurantCandidates = buildGroupRestaurantCandidates(groupEntries);
   const buildSessionSnapshot = (foodIds: string[]) => ({
     foodIds,
@@ -131,6 +143,10 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
     const route = homeState.location.route;
     if (!route || !route.origin.trim() || !route.destination.trim()) {
       setMessage('出発地と目的地を入力してください');
+      return;
+    }
+    if (!homeState.conditions.transport) {
+      setMessage('移動手段を選択してください');
       return;
     }
     if (!routeSearchProvider) {
@@ -255,9 +271,9 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
           <button className="primary-button primary-button--hero" type="button" onClick={drawPrimary}><span>ルーレットを回す</span><strong aria-hidden="true">↗</strong></button>
         </div>
       </div>
-      {cuisineResult && <ResultCard cuisine={cuisineResult} cuisineLocationLabel={homeState.location.mode === 'specified' ? homeState.location.label : undefined} routeSearchAvailable={homeState.location.mode === 'route' && Boolean(routeSearchProvider)} onRouteSearch={searchRouteRestaurants} reveal={activeReveal?.kind === 'cuisine' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onCuisineDecision={decideCuisine} onReroll={drawCuisine} />}
+      {cuisineResult && <ResultCard cuisine={cuisineResult} cuisineLocationLabel={cuisineMapLocationLabel} routeSearchAvailable={homeState.location.mode === 'route' && Boolean(routeSearchProvider) && homeState.conditions.transport !== 'transit'} onRouteSearch={searchRouteRestaurants} reveal={activeReveal?.kind === 'cuisine' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onCuisineDecision={decideCuisine} onReroll={drawCuisine} />}
       {isSearchingRestaurants && <p className="status-message" role="status">道中の店舗を探しています…</p>}
-      {restaurantResult && <ResultCard restaurant={restaurantResult} reveal={activeReveal?.kind === 'restaurant' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
+      {restaurantResult && <ResultCard restaurant={restaurantResult} navigationTravelMode={navigationTravelMode} reveal={activeReveal?.kind === 'restaurant' ? activeReveal : undefined} onRevealComplete={finishActiveReveal} onRestaurantDecision={decideRestaurant} onReroll={rerollRestaurant} onExcludeAndReroll={excludeAndRerollRestaurant} onSaveRestaurant={saveRestaurant} />}
       {restaurantCandidates.length > 0 && !restaurantCandidates.some((candidate) => candidate.brandId) && (
         <section className="candidate-stage" aria-labelledby="candidate-stage-heading">
           <div className="candidate-stage__intro">

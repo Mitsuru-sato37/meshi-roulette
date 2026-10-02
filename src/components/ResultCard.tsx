@@ -1,5 +1,5 @@
 import type { Food, RestaurantCandidate } from '../domain/types';
-import { buildCuisineSearchUrl, buildMapLinks } from '../domain/mapLinks';
+import { buildCuisineSearchUrl, buildMapLinks, type NavigationTravelMode } from '../domain/mapLinks';
 import { RouletteReveal, type RouletteRevealConfig } from './RouletteReveal';
 
 type ResultCardProps = {
@@ -8,6 +8,7 @@ type ResultCardProps = {
   routeSearchAvailable?: boolean;
   onRouteSearch?: () => void;
   restaurant?: RestaurantCandidate | null;
+  navigationTravelMode?: NavigationTravelMode;
   onCuisineDecision?: () => void;
   onRestaurantDecision?: () => void;
   onReroll?: () => void;
@@ -17,11 +18,11 @@ type ResultCardProps = {
   onRevealComplete?: () => void;
 };
 
-export function ResultCard({ cuisine, cuisineLocationLabel, routeSearchAvailable, onRouteSearch, restaurant, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
+export function ResultCard({ cuisine, cuisineLocationLabel, routeSearchAvailable, onRouteSearch, restaurant, navigationTravelMode, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
   const finalClassName = reveal ? 'result-card__final--hidden' : undefined;
   if (restaurant) {
     const hasMetadata = restaurant.metadataAvailable !== false;
-    const { mapUrl, navigationUrl } = buildMapLinks(restaurant);
+    const { mapUrl, navigationUrl } = buildMapLinks(restaurant, { travelMode: navigationTravelMode });
     return (
       <section className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
         <p className="eyebrow">今回の候補</p>

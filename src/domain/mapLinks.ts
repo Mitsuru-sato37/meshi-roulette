@@ -7,6 +7,12 @@ type CuisineSearch = {
   locationLabel?: string | null;
 };
 
+export type NavigationTravelMode = 'driving' | 'walking' | 'bicycling' | 'transit';
+
+type MapLinkOptions = {
+  travelMode?: NavigationTravelMode;
+};
+
 function coordinateLabel(candidate: MapCandidate): string | null {
   const latitude = candidate.location?.latitude;
   const longitude = candidate.location?.longitude;
@@ -24,7 +30,7 @@ function googlePlaceId(candidate: MapCandidate): string | null {
   return candidate.providerPlaceId.replace(/^places\//, '');
 }
 
-export function buildMapLinks(candidate: MapCandidate) {
+export function buildMapLinks(candidate: MapCandidate, options: MapLinkOptions = {}) {
   const destination = destinationLabel(candidate);
   const coordinates = coordinateLabel(candidate);
   const searchParams = new URLSearchParams({ api: '1', query: destination });
@@ -34,7 +40,7 @@ export function buildMapLinks(candidate: MapCandidate) {
   const navigationParams = new URLSearchParams({
     api: '1',
     destination: coordinates ?? destination,
-    travelmode: 'walking',
+    travelmode: options.travelMode ?? 'walking',
   });
 
   return {

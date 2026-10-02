@@ -33,4 +33,9 @@ describe('buildMapLinks', () => {
     expect(mapUrl.searchParams.get('query')).toBe('麺処ひなた 駅前');
     expect(navigationUrl.searchParams.get('destination')).toBe('麺処ひなた 駅前');
   });
+
+  it('uses the selected travel mode for navigation', () => {
+    const links = buildMapLinks({ name: '麺処テスト', locationLabel: '名古屋駅' }, { travelMode: 'driving' });
+    expect(new URL(links.navigationUrl).searchParams.get('travelmode')).toBe('driving');
+  });
 });
