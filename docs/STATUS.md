@@ -1,23 +1,36 @@
-# Status entry point
+# Status
 
-This file is the fixed cross-PC status entry point.
+Status: Active cross-PC handoff entry point
+Last updated: 2026-10-05
 
-## Canonical handoff
+This file is the canonical handoff document for this repository. Codex chat history is not a source of truth.
 
-The authoritative current implementation handoff is:
+## Current state
 
-- `docs/PROGRESS.md`
+- The authoritative product specification is `docs/product-spec.md`.
+- The app is a React/TypeScript/Vite project.
+- GitHub is the shared source of truth across PCs.
+- No single active feature branch or next implementation task was recorded in the repository when this handoff standard was added.
 
-Read that file before implementation and update it before ending a meaningful Codex session.
+## Active branch
 
-## Required handoff fields
+Update this field at the end of each meaningful development session.
 
-The latest handoff in `docs/PROGRESS.md` must include:
+`main`
 
-- active branch;
-- completed work;
-- remaining/next work;
-- verification run;
-- blockers, external credentials, or user decisions still required.
+## Completed in latest handoff
 
-Do not duplicate the full progress log in this file. Its purpose is to give every PC and every Codex session a stable path to the current handoff.
+- Added fixed `docs/SPEC.md` and `docs/STATUS.md` entry points for cross-PC Codex recovery.
+- Standardized the rule that important context must be committed and pushed rather than left only in Codex history or local files.
+
+## Next
+
+Before starting the next feature, replace this section with the exact task being continued and its acceptance criteria.
+
+## Verification
+
+Documentation-only workflow change. Verify that `AGENTS.md` points to `docs/SPEC.md` and `docs/STATUS.md` and that both files are present on the pushed branch.
+
+## Blockers / external dependencies
+
+None for the handoff workflow itself.
