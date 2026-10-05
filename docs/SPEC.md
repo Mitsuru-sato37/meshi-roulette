@@ -1,16 +1,20 @@
 # Specification entry point
 
-This is the fixed specification entry point for Codex sessions. It is an index, not a duplicate specification.
+This file is the fixed specification entry point for cross-PC Codex work. It intentionally does not duplicate the product specification.
 
 ## Canonical sources
 
-1. `docs/product-spec.md` — authoritative product specification.
-2. `data/food-categories.json` — authoritative food-category data.
-3. `data/local-specialties.json` — authoritative local-specialty data.
-4. `AGENTS.md` — implementation invariants and repository workflow.
+Read these in order:
 
-Any user-visible behavior, probability rule, persistence behavior, condition interpretation, or external-service behavior must be updated in the canonical specification rather than duplicated here.
+1. `AGENTS.md` — repository-wide implementation and safety rules.
+2. `README.md` — project overview, development commands, and operational notes.
+3. `docs/product-spec.md` — authoritative product specification.
+4. `data/food-categories.json` — authoritative food-category data.
+5. `data/local-specialties.json` — authoritative local-specialty data.
+6. `.github/ISSUE_TEMPLATE/feedback.yml` — user feedback entry point.
+
+If any summary conflicts with `docs/product-spec.md`, the product specification wins.
 
 ## Update rule
 
-Keep this file stable. Update `docs/product-spec.md` and the relevant master data when the product changes.
+When user-visible behavior, probability rules, saved history, condition interpretation, or external-service behavior changes, update `docs/product-spec.md` in the same change. Keep this file as a stable index only.
