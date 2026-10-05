@@ -29,4 +29,10 @@ describe('RouletteReveal', () => {
     expect(screen.getByRole('status')).not.toHaveTextContent('海鮮');
     expect(onComplete).not.toHaveBeenCalled();
   });
+
+  it('does not show a progress bar under the roulette slot', () => {
+    render(<RouletteReveal items={['ラーメン', 'カレー', '海鮮']} winnerLabel="海鮮" onComplete={() => undefined} />);
+
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
 });

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { buildCuisineCandidates } from './domain/candidates';
 import { foodCatalog } from './domain/masterData';
 import { recordDecision, type DecisionHistory } from './domain/history';
@@ -17,7 +17,6 @@ import { ConditionPanel } from './components/ConditionPanel';
 import { ConditionSummary } from './components/ConditionSummary';
 import { LocationPicker } from './components/LocationPicker';
 import { ModeSwitch } from './components/ModeSwitch';
-import { FoodPickerSheet } from './components/FoodPickerSheet';
 import { GroupPanel } from './components/GroupPanel';
 import { buildGroupFoodCandidates, buildGroupRestaurantCandidates, createManualRestaurantCandidate } from './domain/groupCandidates';
 import { requestCurrentLocation } from './application/location';
@@ -29,6 +28,7 @@ type ActiveReveal = RouletteRevealConfig & { kind: 'cuisine' | 'restaurant' };
 type AppProps = { restaurantSearchEndpoint?: string };
 
 const defaultRestaurantSearchEndpoint = import.meta.env.VITE_RESTAURANT_API_URL?.trim() || (import.meta.env.PROD ? '/api/restaurant-search' : undefined);
+const FoodPickerSheet = lazy(() => import('./components/FoodPickerSheet').then(({ FoodPickerSheet: Component }) => ({ default: Component })));
 
 export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint }: AppProps = {}) {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -302,7 +302,7 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
         onLocationClick={() => setShowLocationPicker((current) => !current)}
         onConditionsClick={() => setShowConditionPanel((current) => !current)}
       />
-      {showFoodPicker && homeState.mode !== 'group' && <FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} />}
+      {showFoodPicker && homeState.mode !== 'group' && <Suspense fallback={<p className="status-message" role="status">料理候補を読み込んでいます…</p>}><FoodPickerSheet catalog={foodCatalog} include={selection.include} exclude={selection.exclude} regionLabel={homeState.location.label} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} onClose={() => setShowFoodPicker(false)} /></Suspense>}
       {showLocationPicker && <LocationPicker mode={homeState.location.mode} label={homeState.location.label} route={homeState.location.route} transport={homeState.conditions.transport} onUseCurrentLocation={useCurrentLocation} onRouteChange={(route) => { setHomeState((current) => updateRoute(current, route)); clearGeneratedUi(); }} onTransportChange={(transport) => { setHomeState((current) => updateConditions(current, { transport })); clearGeneratedUi(); }} onChange={(mode, label) => { setHomeState((current) => updateLocationMode(current, { mode, label })); clearGeneratedUi(); }} />}
       {showConditionPanel && <ConditionPanel conditions={homeState.conditions} onChange={(patch) => { setHomeState((current) => updateConditions(current, patch)); clearGeneratedUi(); }} />}
       {homeState.mode !== 'group' && <CuisinePicker groups={foodCatalog.groups} foods={foodCatalog.foods} include={selection.include} exclude={selection.exclude} onToggleInclude={toggleInclude} onToggleExclude={toggleExclude} />}

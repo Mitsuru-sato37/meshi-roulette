@@ -17,6 +17,7 @@ describe('restaurant search worker', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('text/javascript');
+    expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
   });
 
   it('keeps the Google key on the server and returns normalized candidates', async () => {
