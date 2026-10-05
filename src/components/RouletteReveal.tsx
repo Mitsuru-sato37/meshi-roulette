@@ -47,8 +47,6 @@ export function RouletteReveal({ items, winnerLabel, onComplete }: RouletteRevea
 
   const previousLabel = rollingItems[(displayIndex - 1 + rollingItems.length) % rollingItems.length];
   const nextLabel = rollingItems[(displayIndex + 1) % rollingItems.length];
-  const progress = Math.round(Math.min(step / totalSteps, 1) * 100);
-
   return (
     <div className={`roulette-reveal${completed ? ' roulette-reveal--complete' : ''}`} role="status" aria-live="polite">
       <div className="roulette-reveal__meta">
@@ -60,9 +58,6 @@ export function RouletteReveal({ items, winnerLabel, onComplete }: RouletteRevea
         <span key={`${step}-${displayLabel}`} className="roulette-reveal__label">{displayLabel}</span>
         <span className="roulette-reveal__slot-row roulette-reveal__slot-row--next" aria-hidden="true">{completed ? '・' : nextLabel}</span>
         <span className="roulette-reveal__marker" aria-hidden="true">◆</span>
-      </div>
-      <div className="roulette-reveal__track" role="progressbar" aria-label="抽選の進行状況" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
-        <span style={{ width: `${progress}%` }} />
       </div>
       <span className="roulette-reveal__hint">候補をめくっています</span>
     </div>

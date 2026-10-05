@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ResultCard } from './ResultCard';
 
 describe('ResultCard roulette reveal', () => {
@@ -8,6 +8,15 @@ describe('ResultCard roulette reveal', () => {
 
     expect(screen.getByRole('heading', { name: '「ピザ」' })).toHaveClass('result-card__final--hidden');
     expect(screen.getByRole('button', { name: 'この料理に決定' }).parentElement).toHaveClass('result-card__final--hidden');
+  });
+
+  it('scrolls the roulette result into view when a reveal starts', () => {
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
+
+    render(<ResultCard cuisine={{ id: 'pizza', label: 'ピザ', parentIds: [], children: [], searchTerms: [], aliases: [], tags: [] }} reveal={{ items: ['ラーメン', 'ピザ'], winnerLabel: 'ピザ' }} onRevealComplete={() => undefined} />);
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
   });
 
   it('offers an in-app route search when the route API is configured', () => {

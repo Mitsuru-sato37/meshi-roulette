@@ -33,6 +33,10 @@ function siteManifest(): string {
   return typeof __MESHI_SITE_MANIFEST__ === 'string' ? __MESHI_SITE_MANIFEST__ : '{}';
 }
 
+function siteAssets(): Record<string, string> {
+  return typeof __MESHI_SITE_ASSETS__ === 'object' && __MESHI_SITE_ASSETS__ !== null ? __MESHI_SITE_ASSETS__ : {};
+}
+
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -54,16 +58,18 @@ export function createRestaurantSearchWorker(fetcher: WorkerFetcher = fetch) {
         return new Response(siteHtml(), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
       }
       if (url.pathname === '/favicon.svg') {
-        return new Response(siteAsset(siteFavicon(), ''), { headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' } });
+        return new Response(siteAsset(siteFavicon(), ''), { headers: { 'Content-Type': 'image/svg+xml; charset=utf-8', 'Cache-Control': 'public, max-age=31536000, immutable' } });
       }
       if (url.pathname === '/site.webmanifest') {
-        return new Response(siteAsset(siteManifest(), '{}'), { headers: { 'Content-Type': 'application/manifest+json; charset=utf-8' } });
+        return new Response(siteAsset(siteManifest(), '{}'), { headers: { 'Content-Type': 'application/manifest+json; charset=utf-8', 'Cache-Control': 'public, max-age=31536000, immutable' } });
       }
       if (url.pathname.startsWith('/assets/') && url.pathname.endsWith('.js')) {
-        return new Response(siteScript(), { headers: { 'Content-Type': 'text/javascript; charset=utf-8' } });
+        const assetName = url.pathname.slice('/assets/'.length);
+        return new Response(siteAssets()[assetName] ?? siteScript(), { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'public, max-age=31536000, immutable' } });
       }
       if (url.pathname.startsWith('/assets/') && url.pathname.endsWith('.css')) {
-        return new Response(siteStyles(), { headers: { 'Content-Type': 'text/css; charset=utf-8' } });
+        const assetName = url.pathname.slice('/assets/'.length);
+        return new Response(siteAssets()[assetName] ?? siteStyles(), { headers: { 'Content-Type': 'text/css; charset=utf-8', 'Cache-Control': 'public, max-age=31536000, immutable' } });
       }
       if (url.pathname !== '/api/restaurant-search') return jsonResponse({ error: 'Not found' }, 404);
       if (request.method === 'OPTIONS') return jsonResponse(null, 204);

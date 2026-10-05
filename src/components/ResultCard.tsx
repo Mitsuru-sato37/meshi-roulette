@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { Food, RestaurantCandidate } from '../domain/types';
 import { buildCuisineSearchUrl, buildMapLinks, type NavigationTravelMode } from '../domain/mapLinks';
 import { RouletteReveal, type RouletteRevealConfig } from './RouletteReveal';
@@ -20,12 +21,19 @@ type ResultCardProps = {
 };
 
 export function ResultCard({ cuisine, cuisineLocationLabel, cuisineTakeoutRequired, routeSearchAvailable, onRouteSearch, restaurant, navigationTravelMode, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
+  const resultCardRef = useRef<HTMLElement>(null);
+  const resultId = restaurant?.id ?? cuisine?.id ?? null;
+  useEffect(() => {
+    if (!resultId) return;
+    resultCardRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+  }, [resultId, reveal]);
+
   const finalClassName = reveal ? 'result-card__final--hidden' : undefined;
   if (restaurant) {
     const hasMetadata = restaurant.metadataAvailable !== false;
     const { mapUrl, navigationUrl } = buildMapLinks(restaurant, { travelMode: navigationTravelMode });
     return (
-      <section className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
+      <section ref={resultCardRef} className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
         <p className="eyebrow">今回の候補</p>
         {reveal && onRevealComplete && <RouletteReveal {...reveal} onComplete={onRevealComplete} />}
         <h2 className={finalClassName}>{restaurant.name}</h2>
@@ -48,7 +56,7 @@ export function ResultCard({ cuisine, cuisineLocationLabel, cuisineTakeoutRequir
   if (!cuisine) return null;
   const cuisineMapUrl = buildCuisineSearchUrl({ label: cuisine.label, locationLabel: cuisineLocationLabel, takeoutRequired: cuisineTakeoutRequired });
   return (
-    <section className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
+    <section ref={resultCardRef} className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
       <p className="eyebrow">今日のご飯は</p>
       {reveal && onRevealComplete && <RouletteReveal {...reveal} onComplete={onRevealComplete} />}
       <h2 className={finalClassName}>「{cuisine.label}」</h2>

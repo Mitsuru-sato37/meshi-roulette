@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@500;600;700&display=swap');
 
 :root {
   color: #1e2724;
@@ -138,13 +137,11 @@ h1 em { color: var(--accent); font-family: 'Noto Serif JP', serif; font-style: n
 .roulette-reveal__slot-row--next { transform: translateY(2px); }
 .roulette-reveal__label { position: relative; z-index: 2; min-height: 1.2em; color: var(--paper); font-size: clamp(1.7rem, 7vw, 2.45rem); font-weight: 900; letter-spacing: -.08em; line-height: 1.1; text-align: center; animation: roulette-slot-in .22s cubic-bezier(.2,.8,.2,1); }
 .roulette-reveal__marker { position: absolute; z-index: 3; top: 50%; right: 10px; color: var(--lime); font-size: .6rem; transform: translateY(-50%); }
-.roulette-reveal__track { position: relative; display: block; height: 5px; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / 14%); }
-.roulette-reveal__track span { display: block; height: 100%; border-radius: inherit; background: var(--lime); box-shadow: 0 0 12px rgb(215 232 101 / 55%); transition: width .08s linear; }
 .roulette-reveal__hint { color: rgb(255 255 255 / 52%); font-size: .67rem; letter-spacing: .05em; }
 .roulette-reveal--complete .roulette-reveal__hint { color: var(--lime); }
 .result-card__final--hidden { visibility: hidden; height: 0 !important; min-height: 0 !important; margin: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; border: 0 !important; overflow: hidden; opacity: 0; pointer-events: none; }
 @keyframes roulette-slot-in { from { opacity: .2; transform: translateY(9px) scale(.92); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@media (prefers-reduced-motion: reduce) { .roulette-reveal__label, .roulette-reveal__track span { animation: none; transition: none; } }
+@media (prefers-reduced-motion: reduce) { .roulette-reveal__label { animation: none; transition: none; } }
 
 .candidate-stage { margin: 24px 0 0; }
 .candidate-stage__intro { margin: 0 4px 14px; }
