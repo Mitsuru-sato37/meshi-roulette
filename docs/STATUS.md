@@ -1,7 +1,7 @@
 # Status
 
 Status: Active cross-PC handoff entry point
-Last updated: 2026-10-05
+Last updated: 2026-10-06
 
 This file is the canonical handoff document for this repository. Codex chat history is not a source of truth.
 
@@ -10,27 +10,27 @@ This file is the canonical handoff document for this repository. Codex chat hist
 - The authoritative product specification is `docs/product-spec.md`.
 - The app is a React/TypeScript/Vite project.
 - GitHub is the shared source of truth across PCs.
-- No single active feature branch or next implementation task was recorded in the repository when this handoff standard was added.
 
 ## Active branch
 
-Update this field at the end of each meaningful development session.
-
-`main`
+`codex/ios-home-screen-icon`
 
 ## Completed in latest handoff
 
-- Added fixed `docs/SPEC.md` and `docs/STATUS.md` entry points for cross-PC Codex recovery.
-- Standardized the rule that important context must be committed and pushed rather than left only in Codex history or local files.
+- Added the approved ご飯ルーレット app icon as 180px Apple touch icon and 192px/512px web-manifest PNG assets.
+- Kept the existing SVG browser favicon and linked the PNG specifically for iPhone home-screen installation.
+- Added Apple web-app title and standalone metadata.
 
 ## Next
 
-Before starting the next feature, replace this section with the exact task being continued and its acceptance criteria.
+Review and merge the pull request. After deployment, remove and re-add the app from the iPhone home screen to refresh the cached icon.
 
 ## Verification
 
-Documentation-only workflow change. Verify that `AGENTS.md` points to `docs/SPEC.md` and `docs/STATUS.md` and that both files are present on the pushed branch.
+- Checked that index.html points to the 180px Apple touch icon and existing manifest.
+- Checked that the manifest declares PNG icons at 192px and 512px.
+- Automated tests and production build were not run; this change only updates static assets and document metadata.
 
 ## Blockers / external dependencies
 
-None for the handoff workflow itself.
+- The pull request must be reviewed and merged before the production site receives these assets.
