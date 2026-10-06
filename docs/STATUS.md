@@ -1,7 +1,7 @@
 # Status
 
 Status: Active cross-PC handoff entry point
-Last updated: 2026-10-06
+Last updated: 2026-10-07
 
 This file is the canonical handoff document for this repository. Codex chat history is not a source of truth.
 
@@ -13,24 +13,32 @@ This file is the canonical handoff document for this repository. Codex chat hist
 
 ## Active branch
 
-`codex/ios-home-screen-icon`
+`codex/debug-standard-v1`
 
 ## Completed in latest handoff
 
-- Added the approved ご飯ルーレット app icon as 180px Apple touch icon and 192px/512px web-manifest PNG assets.
-- Kept the existing SVG browser favicon and linked the PNG specifically for iPhone home-screen installation.
-- Added Apple web-app title and standalone metadata.
+- Confirmed latest `main` at `39519bee` and resumed PR #7 branch `codex/debug-standard-v1` at `60ab0ee`.
+- Added stale route-search response protection after condition changes.
+- Validated remote restaurant-search response JSON and candidate shape.
+- Added regression coverage for asynchronous condition changes, zero/error/malformed API responses.
+- Recorded the debug results and remaining device/external-service checks in `docs/DEBUG_MATRIX.md`.
 
 ## Next
 
-Review and merge the pull request. After deployment, remove and re-add the app from the iPhone home screen to refresh the cached icon.
+- Review and merge PR #7 with the completed debug fixes and matrix update.
+- On a mobile device or configured viewport, verify 320–390px layout and software keyboard behavior.
+- If API credentials are configured, verify the deployed Google Places/Routes integration end to end.
 
 ## Verification
 
-- Checked that index.html points to the 180px Apple touch icon and existing manifest.
-- Checked that the manifest declares PNG icons at 192px and 512px.
-- Automated tests and production build were not run; this change only updates static assets and document metadata.
+- Initial baseline: `npm test -- --run` passed (24 files, 88 tests); `npm run build` passed.
+- Targeted regression/provider tests passed after fixes.
+- Final full suite: `npm test -- --run` passed (24 files, 99 tests).
+- Final production build: `npm run build` passed (client, server, TypeScript).
+- Browser interaction checks: empty/whitespace input, 300-character Japanese/emoji shop name, duplicate shop, double-click roulette, tab switch during reveal, keyboard mode switch, and reload to initial home.
 
 ## Blockers / external dependencies
 
-- The pull request must be reviewed and merged before the production site receives these assets.
+- Real Google API credentials and live service were unavailable; provider and failure paths used mocks.
+- No mobile viewport/device or software keyboard was available in this session.
+- No blocker to the code/test workflow.

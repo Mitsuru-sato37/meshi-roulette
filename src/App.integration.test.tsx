@@ -256,6 +256,30 @@ describe('meal roulette user flows', () => {
     fetchMock.mockRestore();
   });
 
+  it('ignores a delayed route response after the user changes conditions', async () => {
+    let resolveSearch: ((response: Response) => void) | undefined;
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(() => new Promise((resolve) => { resolveSearch = resolve; }));
+    render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
+
+    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '道中の移動手段' }), { target: { value: 'walk' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '道中の店を探す' }));
+    await waitFor(() => expect(resolveSearch).toBeDefined());
+
+    fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'テイクアウト' }));
+    resolveSearch?.(new Response(JSON.stringify({ candidates: [{ id: 'stale', name: '古い条件の店', foodIds: ['ramen'], locationLabel: '栄', travelSummary: '約5分', isOpen: true, budgetLabel: '2,000円前後' }] }), { status: 200 }));
+
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'この中から店舗を決める' })).not.toBeInTheDocument());
+    expect(screen.queryByText('古い条件の店')).not.toBeInTheDocument();
+    fetchMock.mockRestore();
+  });
+
   it('does not search a route until both endpoints are provided', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch');
     render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
@@ -287,6 +311,64 @@ describe('meal roulette user flows', () => {
     expect(await screen.findByText('移動手段を選択してください')).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(screen.queryAllByText('店舗検索は場所を指定すると利用できます')).toHaveLength(0);
+    fetchMock.mockRestore();
+  });
+
+  it('shows zero API candidates without relaxing the route conditions', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"candidates":[]}', { status: 200 }));
+    render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
+
+    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '道中の移動手段' }), { target: { value: 'walk' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '道中の店を探す' }));
+
+    expect(await screen.findByText('寄り道上限内に条件に合う店舗がありません')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'この中から店舗を決める' })).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '道中の出発地' })).toHaveValue('名古屋駅');
+    expect(screen.getByRole('textbox', { name: '道中の目的地' })).toHaveValue('栄駅');
+    fetchMock.mockRestore();
+  });
+
+  it.each([400, 503])('keeps the app usable after a route API %s response', async (status) => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status }));
+    render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
+
+    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '道中の移動手段' }), { target: { value: 'walk' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '道中の店を探す' }));
+
+    expect(await screen.findByText('道中の店舗情報を取得できませんでした。Googleマップで店を探してください')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Googleマップで店を探す' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'この中から店舗を決める' })).not.toBeInTheDocument();
+    fetchMock.mockRestore();
+  });
+
+  it.each(['{bad', '{}', '{"candidates":[null]}'])('uses the existing fallback for an invalid route API payload: %s', async (body) => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(body, { status: 200 }));
+    render(<App restaurantSearchEndpoint="/api/restaurant-search" />);
+
+    chooseCuisine('ラーメン', '麺');
+    fireEvent.click(screen.getByRole('button', { name: 'どこで食べる？ おまかせ' }));
+    fireEvent.click(screen.getByRole('button', { name: '道中で探す' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の出発地' }), { target: { value: '名古屋駅' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '道中の目的地' }), { target: { value: '栄駅' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '道中の移動手段' }), { target: { value: 'walk' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '道中の店を探す' }));
+
+    expect(await screen.findByText('道中の店舗情報を取得できませんでした。Googleマップで店を探してください')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Googleマップで店を探す' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'この中から店舗を決める' })).not.toBeInTheDocument();
     fetchMock.mockRestore();
   });
 });

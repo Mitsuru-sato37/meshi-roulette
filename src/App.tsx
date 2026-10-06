@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react';
 import { buildCuisineCandidates } from './domain/candidates';
 import { foodCatalog } from './domain/masterData';
 import { recordDecision, type DecisionHistory } from './domain/history';
@@ -52,6 +52,7 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
   const [savedReveal, setSavedReveal] = useState<RouletteRevealConfig | null>(null);
   const [isSearchingRestaurants, setIsSearchingRestaurants] = useState(false);
   const [version, setVersion] = useState(0);
+  const routeSearchRequestId = useRef(0);
   const store = useMemo(() => createLocalStore(getBrowserStorage()), []);
   const routeSearchProvider = useMemo(() => restaurantSearchEndpoint ? createRemoteRestaurantProvider({ endpoint: restaurantSearchEndpoint }) : null, [restaurantSearchEndpoint]);
   const cuisineCandidates = homeState.mode === 'group' && groupTarget === 'food' && groupEntries.length > 0
@@ -92,6 +93,8 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
   });
 
   const clearGeneratedUi = () => {
+    routeSearchRequestId.current += 1;
+    setIsSearchingRestaurants(false);
     setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setMessage(''); setActiveReveal(null);
   };
   const finishActiveReveal = useCallback(() => setActiveReveal(null), []);
@@ -100,12 +103,12 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
   const toggleInclude = (id: string) => {
     setHomeState((current) => updateFoodSelection(current, id, 'include'));
     setSelection((current) => ({ ...current, include: current.include.includes(id) ? current.include.filter((item) => item !== id) : [...current.include, id] }));
-    setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setMessage('');
+    clearGeneratedUi();
   };
   const toggleExclude = (id: string) => {
     setHomeState((current) => updateFoodSelection(current, id, 'exclude'));
     setSelection((current) => ({ ...current, exclude: current.exclude.includes(id) ? current.exclude.filter((item) => item !== id) : [...current.exclude, id] }));
-    setCuisineResult(null); setRestaurantResult(null); setRestaurantCandidates([]); setSelectedRestaurantIds([]); setExcludedRestaurantIds([]); setMessage('');
+    clearGeneratedUi();
   };
   const useCurrentLocation = async () => {
     try {
@@ -153,6 +156,7 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
       setMessage('道中検索APIが未設定です。Googleマップで店を探してください');
       return;
     }
+    const requestId = ++routeSearchRequestId.current;
     setIsSearchingRestaurants(true);
     setRestaurantCandidates([]);
     setSelectedRestaurantIds([]);
@@ -173,13 +177,15 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
           takeoutRequired: homeState.conditions.takeout,
         },
       }));
-      setRestaurantCandidates(candidates);
-      setSelectedRestaurantIds(candidates.map((candidate) => candidate.id));
-      setMessage(candidates.length > 0 ? `道中の候補を${candidates.length}件取得しました` : '寄り道上限内に条件に合う店舗がありません');
+      if (routeSearchRequestId.current === requestId) {
+        setRestaurantCandidates(candidates);
+        setSelectedRestaurantIds(candidates.map((candidate) => candidate.id));
+        setMessage(candidates.length > 0 ? `道中の候補を${candidates.length}件取得しました` : '寄り道上限内に条件に合う店舗がありません');
+      }
     } catch {
-      setMessage('道中の店舗情報を取得できませんでした。Googleマップで店を探してください');
+      if (routeSearchRequestId.current === requestId) setMessage('道中の店舗情報を取得できませんでした。Googleマップで店を探してください');
     } finally {
-      setIsSearchingRestaurants(false);
+      if (routeSearchRequestId.current === requestId) setIsSearchingRestaurants(false);
     }
   };
   const decideCuisine = () => {
