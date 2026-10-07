@@ -5,6 +5,7 @@ export type Food = {
   children: string[];
   searchTerms: string[];
   aliases: string[];
+  routeSearchTerm?: string;
   tags: string[];
 };
 

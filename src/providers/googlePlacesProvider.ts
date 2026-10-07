@@ -43,8 +43,17 @@ function durationMinutes(value: number | null): number | null {
 }
 
 function searchText(query: RestaurantQuery): string {
+  if (query.route) {
+    return [
+      query.conditions?.takeoutRequired ? 'テイクアウト' : undefined,
+      query.foodIds.map((id) => {
+        const food = foodCatalog.foods.find((candidate) => candidate.id === id);
+        return food?.routeSearchTerm ?? food?.label ?? id;
+      }).join(' '),
+    ].filter(Boolean).join(' ');
+  }
   return [
-    query.route ? undefined : query.locationLabel,
+    query.locationLabel,
     query.conditions?.takeoutRequired ? 'テイクアウト' : undefined,
     query.foodIds.flatMap((id) => {
       const food = foodCatalog.foods.find((candidate) => candidate.id === id);

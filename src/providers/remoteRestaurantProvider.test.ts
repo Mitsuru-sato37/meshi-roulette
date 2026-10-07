@@ -18,4 +18,20 @@ describe('remote restaurant provider', () => {
 
     await expect(provider.search({ foodIds: ['ramen'] })).rejects.toThrow('Restaurant search service is unavailable');
   });
+
+  it('accepts an explicit zero-candidate response', async () => {
+    const provider = createRemoteRestaurantProvider({ endpoint: '/api/restaurant-search', fetcher: async () => new Response('{"candidates":[]}', { status: 200 }) });
+
+    await expect(provider.search({ foodIds: ['ramen'] })).resolves.toEqual([]);
+  });
+
+  it.each([
+    ['missing candidate list', '{}'],
+    ['malformed candidate', '{"candidates":[null]}'],
+    ['malformed JSON', '{bad'],
+  ])('rejects %s instead of treating it as a successful empty result', async (_case, body) => {
+    const provider = createRemoteRestaurantProvider({ endpoint: '/api/restaurant-search', fetcher: async () => new Response(body, { status: 200 }) });
+
+    await expect(provider.search({ foodIds: ['ramen'] })).rejects.toThrow('Invalid restaurant search response');
+  });
 });

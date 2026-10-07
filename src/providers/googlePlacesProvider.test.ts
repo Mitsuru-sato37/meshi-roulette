@@ -82,6 +82,43 @@ describe('google places provider', () => {
     expect(searchBody.regionCode).toBe('JP');
   });
 
+  it('uses the route search term configured for the selected cuisine category', async () => {
+    let searchBody = '';
+    const provider = createGooglePlacesProvider({
+      apiKey: 'test-key',
+      fetcher: async (input, init) => {
+        if (String(input).includes('computeRoutes')) {
+          return new Response(JSON.stringify({ routes: [{ duration: '1500s', polyline: { encodedPolyline: 'encoded-route' } }] }), { status: 200 });
+        }
+        searchBody = String(init?.body);
+        return new Response(JSON.stringify({
+          places: [{ id: 'places/hama-higashiura', displayName: { text: 'はま寿司 東浦店' }, currentOpeningHours: { openNow: true } }],
+          routingSummaries: [{ legs: [{ duration: '900s' }, { duration: '780s' }] }],
+        }), { status: 200 });
+      },
+    });
+
+    await expect(provider.search({ foodIds: ['sushi_restaurant'], route: { origin: '東浦町立藤江小学校', destination: '大高緑地', maxDetourMinutes: 10 }, conditions: { eatingTime: 'now' } })).resolves.toEqual([
+      expect.objectContaining({ id: 'places/hama-higashiura', name: 'はま寿司 東浦店', routeDetourMinutes: 3, isOpen: true }),
+    ]);
+
+    expect(JSON.parse(searchBody).textQuery).toBe('寿司');
+  });
+
+  it('excludes a route candidate whose calculated detour exceeds the selected limit by one minute', async () => {
+    const provider = createGooglePlacesProvider({
+      apiKey: 'test-key',
+      fetcher: async (input, init) => String(input).includes('computeRoutes')
+        ? new Response(JSON.stringify({ routes: [{ duration: '1500s', polyline: { encodedPolyline: 'encoded-route' } }] }), { status: 200 })
+        : new Response(JSON.stringify({
+            places: [{ id: 'places/hama', displayName: { text: 'はま寿司 東浦店' }, currentOpeningHours: { openNow: true } }],
+            routingSummaries: [{ legs: [{ duration: '900s' }, { duration: '1260s' }] }],
+          }), { status: 200 }),
+    });
+
+    await expect(provider.search({ foodIds: ['sushi'], route: { origin: '東浦町立藤江小学校', destination: '大高緑地', maxDetourMinutes: 10 }, conditions: { eatingTime: 'scheduled' } })).resolves.toEqual([]);
+  });
+
   it('does not silently convert transit route searches into another travel mode', async () => {
     const fetcher = async () => new Response('{}', { status: 200 });
     const provider = createGooglePlacesProvider({ apiKey: 'test-key', fetcher });

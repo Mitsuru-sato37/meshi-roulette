@@ -1,0 +1,61 @@
+name: Bug report
+description: 再現可能な不具合を記録します
+title: "[Bug] "
+labels: []
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 何が起きているかを短く書いてください。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 重要度
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待結果
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の結果
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 環境
+      description: 例: iPhone / Safari、Windows / Chrome
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 補足
+      description: スクリーンショット、ログ、原因候補、未確認事項など
