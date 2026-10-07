@@ -42,7 +42,7 @@
 
     { "id": "sushi", "label": "寿司", "parentIds": [], "children": ["conveyor_belt_sushi", "sushi_restaurant", "premium_sushi"], "searchTerms": ["寿司", "鮨"], "aliases": ["すし"], "tags": ["和食", "魚"] },
     { "id": "conveyor_belt_sushi", "label": "回転寿司", "parentIds": ["sushi"], "children": [], "searchTerms": ["回転寿司"], "aliases": [], "tags": ["和食", "魚", "カジュアル"] },
-    { "id": "sushi_restaurant", "label": "寿司店", "parentIds": ["sushi"], "children": [], "searchTerms": ["寿司店", "鮨店"], "aliases": ["寿司屋"], "tags": ["和食", "魚"] },
+    { "id": "sushi_restaurant", "label": "寿司店", "parentIds": ["sushi"], "children": [], "searchTerms": ["寿司店", "鮨店"], "aliases": ["寿司屋"], "routeSearchTerm": "寿司", "tags": ["和食", "魚"] },
     { "id": "premium_sushi", "label": "高級寿司", "parentIds": ["sushi"], "children": [], "searchTerms": ["高級寿司", "江戸前寿司"], "aliases": [], "tags": ["和食", "魚", "高級"] },
 
     { "id": "seafood", "label": "海鮮", "parentIds": [], "children": ["seafood_bowl", "sashimi_fish", "crab", "eel"], "searchTerms": ["海鮮料理", "魚料理"], "aliases": ["シーフード"], "tags": ["魚", "和食"] },
