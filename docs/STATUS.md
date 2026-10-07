@@ -25,7 +25,7 @@ This file is the canonical handoff document for this repository. Codex chat hist
 - Fixed route search query construction to send one category-specific term without concatenating synonyms; `sushi_restaurant` uses the parent-category term `寿司`. Added a regression test for the reported sushi route and 10-minute detour case.
 - Updated `docs/product-spec.md`, `docs/DEBUG_MATRIX.md`, and food master data to record route query terms and distinguish mock verification from unavailable live Google API confirmation.
 - Follow-up live diagnosis confirmed Hama Sushi is present in the first Places response page but rejected for `openNow:false` and a calculated 11-minute detour against the selected 10-minute limit. Added a regression test for the 11-minute boundary. No condition was relaxed.
-- Removed temporary route diagnostics and its production environment variable. Published Site v35 successfully with the cleaned source (deployment `appgdep_6ac58e8224b08191a50df8850e2f60c5`, env revision 6). Updated the matrix with the live API finding and remaining opening-hours reproduction gap.
+- Removed temporary route diagnostics and its production environment variable. Published the cleaned Site source successfully (env revision 6). Updated the matrix with the live API finding and remaining opening-hours reproduction gap.
 
 ## Next
 
@@ -45,7 +45,7 @@ This file is the canonical handoff document for this repository. Codex chat hist
 ## Blockers / external dependencies
 
 - Live Google Places/Routes integration confirmed Hama Sushi in the raw first page, but rejected it under the specified 10-minute detour limit (about 11 minutes) and because it was closed during the check. The reported opening-hours case is not reproduced; a daytime live check remains outstanding.
-- Site v35 is live at `https://meshi-roulette.genomu37.chatgpt.site`. The deployed source has no route diagnostic logging and `ROUTE_SEARCH_DIAGNOSTICS` is absent (revision 6).
+- The live Site is `https://meshi-roulette.genomu37.chatgpt.site`. The deployed source has no route diagnostic logging and `ROUTE_SEARCH_DIAGNOSTICS` is absent (revision 6).
 - `git-status.cmd` fetch could not update `.git/FETCH_HEAD` due to a local permission error; existing local changes were preserved. The current branch is `codex/debug-standard-v1`.
 - Site secret values are redacted by the environment read API; `value: null` does not prove a secret is absent. A successful live route search confirms the configured integration works.
 - No mobile viewport/device or software keyboard was available in this session.
