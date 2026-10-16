@@ -10,6 +10,7 @@ describe('meal roulette user flows', () => {
   it('selects multiple cuisines and stores history only after explicit cuisine decision', () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
     fireEvent.click(screen.getByRole('button', { name: '寿司' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
@@ -27,6 +28,7 @@ describe('meal roulette user flows', () => {
   it('continues from a cuisine result to a restaurant result without saving history on display', async () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'カレー' }));
     fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
     fireEvent.change(screen.getByLabelText('食べる時間'), { target: { value: 'scheduled' } });
@@ -42,6 +44,7 @@ describe('meal roulette user flows', () => {
   it('shows a clear zero-candidate state without changing the user conditions', () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメンを候補から除外' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
@@ -53,6 +56,7 @@ describe('meal roulette user flows', () => {
   it('does not show a roulette action for a single restaurant candidate', async () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'カレー' }));
     fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
     fireEvent.change(screen.getByLabelText('食べる時間'), { target: { value: 'scheduled' } });
@@ -67,6 +71,7 @@ describe('meal roulette user flows', () => {
   it('does not draw an unselected restaurant', async () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
@@ -80,6 +85,7 @@ describe('meal roulette user flows', () => {
   it('clears old restaurant candidates when the cuisine condition changes', async () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
@@ -92,6 +98,7 @@ describe('meal roulette user flows', () => {
   it('clears generated results when a location condition changes', async () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
@@ -105,6 +112,7 @@ describe('meal roulette user flows', () => {
   it('lets the user choose a chain and then select a branch directly', async () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
     fireEvent.click(screen.getByRole('button', { name: 'チェーン・店舗を指定' }));
     fireEvent.click(screen.getByRole('button', { name: '岐阜タンメン' }));
@@ -134,6 +142,7 @@ describe('meal roulette user flows', () => {
   it('runs a roulette using saved restaurants only', async () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
@@ -149,6 +158,7 @@ describe('meal roulette user flows', () => {
   it('can rerun a cuisine decision from history', () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'カレー' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: 'この料理に決定' }));
@@ -174,6 +184,7 @@ describe('meal roulette user flows', () => {
   it('offers map and navigation links for a restaurant result', async () => {
     render(<App />);
 
+    fireEvent.click(screen.getByRole('button', { name: '何を食べる？ おまかせ' }));
     fireEvent.click(screen.getByRole('button', { name: 'ラーメン' }));
     fireEvent.click(screen.getByRole('button', { name: 'ルーレットを回す' }));
     fireEvent.click(screen.getByRole('button', { name: 'この料理のお店を探す' }));
