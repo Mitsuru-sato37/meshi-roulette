@@ -29,7 +29,7 @@ type GooglePlacesConfig = {
 };
 
 function priceLabel(level?: string): string {
-  return ({ PRICE_LEVEL_INEXPENSIVE: '1,000円前後', PRICE_LEVEL_MODERATE: '2,000円前後', PRICE_LEVEL_EXPENSIVE: '3,000円前後', PRICE_LEVEL_VERY_EXPENSIVE: '高価格帯' } as Record<string, string>)[level ?? ''] ?? '予算不明';
+  return ({ PRICE_LEVEL_INEXPENSIVE: '価格帯目安：安め', PRICE_LEVEL_MODERATE: '価格帯目安：標準', PRICE_LEVEL_EXPENSIVE: '価格帯目安：高め', PRICE_LEVEL_VERY_EXPENSIVE: '価格帯目安：かなり高め' } as Record<string, string>)[level ?? ''] ?? '';
 }
 
 function durationSeconds(value?: string): number | null {

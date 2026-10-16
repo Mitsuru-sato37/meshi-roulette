@@ -10,6 +10,7 @@ type ResultCardProps = {
   routeSearchAvailable?: boolean;
   onRouteSearch?: () => void;
   restaurant?: RestaurantCandidate | null;
+  savedDetails?: boolean;
   navigationTravelMode?: NavigationTravelMode;
   onCuisineDecision?: () => void;
   onRestaurantDecision?: () => void;
@@ -20,7 +21,7 @@ type ResultCardProps = {
   onRevealComplete?: () => void;
 };
 
-export function ResultCard({ cuisine, cuisineLocationLabel, cuisineTakeoutRequired, routeSearchAvailable, onRouteSearch, restaurant, navigationTravelMode, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
+export function ResultCard({ cuisine, cuisineLocationLabel, cuisineTakeoutRequired, routeSearchAvailable, onRouteSearch, restaurant, savedDetails = false, navigationTravelMode, onCuisineDecision, onRestaurantDecision, onReroll, onExcludeAndReroll, onSaveRestaurant, reveal, onRevealComplete }: ResultCardProps) {
   const resultCardRef = useRef<HTMLElement>(null);
   const resultId = restaurant?.id ?? cuisine?.id ?? null;
   useEffect(() => {
@@ -31,14 +32,16 @@ export function ResultCard({ cuisine, cuisineLocationLabel, cuisineTakeoutRequir
   const finalClassName = reveal ? 'result-card__final--hidden' : undefined;
   if (restaurant) {
     const hasMetadata = restaurant.metadataAvailable !== false;
+    const budgetLabel = savedDetails && restaurant.provider === 'google' && restaurant.budgetLabel.includes('円') ? null : restaurant.budgetLabel;
     const { mapUrl, navigationUrl } = buildMapLinks(restaurant, { travelMode: navigationTravelMode });
     return (
       <section ref={resultCardRef} className={reveal ? 'result-card result-card--revealing' : 'result-card'} aria-live="polite">
         <p className="eyebrow">今回の候補</p>
         {reveal && onRevealComplete && <RouletteReveal {...reveal} onComplete={onRevealComplete} />}
         <h2 className={finalClassName}>{restaurant.name}</h2>
-        {hasMetadata && <><p className={finalClassName}>{[restaurant.locationLabel, restaurant.travelSummary, restaurant.routeDetourMinutes != null ? `寄り道約${restaurant.routeDetourMinutes}分` : null, restaurant.budgetLabel].filter(Boolean).join(' ・ ')}</p>
-        {restaurant.isOpen === false && <p className={`notice ${finalClassName ?? ''}`}>現在は営業時間外です</p>}
+        {hasMetadata && <><p className={finalClassName}>{[restaurant.locationLabel, restaurant.travelSummary, restaurant.routeDetourMinutes != null ? `寄り道約${restaurant.routeDetourMinutes}分` : null, budgetLabel].filter(Boolean).join(' ・ ')}</p>
+        {savedDetails && <p className={`muted ${finalClassName ?? ''}`}>営業時間・移動時間は保存時の情報です</p>}
+        {!savedDetails && restaurant.isOpen === false && <p className={`notice ${finalClassName ?? ''}`}>現在は営業時間外です</p>}
         <div className={`map-links ${finalClassName ?? ''}`}>
           <a href={mapUrl}><MapIcon />Googleマップで見る</a>
           <a href={navigationUrl}><NavigationIcon />経路を調べる</a>
@@ -46,8 +49,8 @@ export function ResultCard({ cuisine, cuisineLocationLabel, cuisineTakeoutRequir
         <div className={`action-stack ${finalClassName ?? ''}`}>
           <button className="primary-button" type="button" onClick={onRestaurantDecision}>この店に決定</button>
           <button className="secondary-button" type="button" onClick={onReroll}>別の店を引く</button>
-          <button className="secondary-button" type="button" onClick={onExcludeAndReroll}>この店を除外して引く</button>
-          <button className="text-button" type="button" onClick={onSaveRestaurant}>行きたい店に保存</button>
+          {onExcludeAndReroll && <button className="secondary-button" type="button" onClick={onExcludeAndReroll}>この店を除外して引く</button>}
+          {onSaveRestaurant && <button className="text-button" type="button" onClick={onSaveRestaurant}>行きたい店に保存</button>}
         </div>
       </section>
     );

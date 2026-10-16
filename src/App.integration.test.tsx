@@ -177,6 +177,25 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: '保存店舗でルーレットを回す' }));
 
     expect(screen.getAllByRole('status').some((element) => element.textContent?.includes('抽選中'))).toBe(true);
+    fireEvent.click(screen.getByRole('checkbox', { name: /保存店B/ }));
+    expect(screen.queryByText('保存店舗から選びました')).not.toBeInTheDocument();
+    expect(screen.getByText('保存店B')).toBeInTheDocument();
+  });
+
+  it('does not show an old saved-store result after reopening the selection screen', () => {
+    window.localStorage.setItem('meshi-roulette:saved-restaurants', JSON.stringify([
+      { id: 'saved-one', name: '保存店A', foodIds: [], locationLabel: '駅前', travelSummary: '徒歩5分', isOpen: true, budgetLabel: '' },
+    ]));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: '行きたい店' }));
+    fireEvent.click(screen.getByRole('button', { name: '保存店舗でルーレットを回す' }));
+    expect(screen.getByText('保存店舗から選びました')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'ホーム' }));
+    fireEvent.click(screen.getByRole('button', { name: '行きたい店' }));
+
+    expect(screen.queryByText('保存店舗から選びました')).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /保存店A/ })).toBeChecked();
   });
 
   it('can rerun a cuisine decision from history', () => {
@@ -189,6 +208,21 @@ describe('meal roulette user flows', () => {
     fireEvent.click(screen.getByRole('button', { name: 'この料理を再実行' }));
 
     expect(screen.getByRole('button', { name: '何を食べる？ カレー' })).toBeInTheDocument();
+  });
+
+  it('does not silently restore deferred conditions from an older decision', () => {
+    window.localStorage.setItem('meshi-roulette:history', JSON.stringify([{
+      historyId: 'old-conditions', type: 'cuisine', id: 'ramen', label: 'ラーメン', createdAt: new Date().toISOString(),
+      sessionSnapshot: { foodIds: ['ramen'], conditions: { budgetMax: 2000, parkingRequired: true, eatingTime: 'scheduled' } },
+    }]));
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: '履歴' }));
+    fireEvent.click(screen.getByRole('button', { name: 'この料理を再実行' }));
+
+    expect(screen.getByText('以前の予算・駐車場・日時条件は現在利用できないため、復元していません')).toBeInTheDocument();
+    expect(screen.queryByText('2,000円以内')).not.toBeInTheDocument();
+    expect(screen.queryByText('駐車場あり')).not.toBeInTheDocument();
   });
 
   it('captures a route search with origin, destination, and detour limit', () => {
@@ -251,6 +285,7 @@ describe('meal roulette user flows', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/restaurant-search', expect.objectContaining({ method: 'POST' }));
     const candidateStage = screen.getByRole('region', { name: 'この中から店舗を決める' });
     const candidateHeading = within(candidateStage).getByRole('heading', { name: '条件に合う候補 1件' });
+    expect(within(candidateStage).getByText('道中検索で条件に合った候補1件のうち、選択中の1件から同確率で抽選します。検索結果は全店舗を網羅しません。')).toBeInTheDocument();
     const rouletteButton = within(candidateStage).getByRole('button', { name: 'この候補で店舗ルーレットを回す' });
     expect(rouletteButton.compareDocumentPosition(candidateHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fetchMock.mockRestore();

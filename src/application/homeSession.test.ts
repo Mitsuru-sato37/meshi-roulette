@@ -16,7 +16,7 @@ describe('home session', () => {
     expect(state.food.include).toEqual([]);
     expect(state.food.exclude).toEqual([]);
     expect(state.location.mode).toBe('auto');
-    expect(summarizeConditions(state)).toEqual(['料理：おまかせ', '場所：おまかせ', '食べる時間：今から']);
+    expect(summarizeConditions(state)).toEqual(['料理：おまかせ', '場所：おまかせ']);
   });
 
   it('keeps include and exclude selections independently', () => {
@@ -30,15 +30,13 @@ describe('home session', () => {
   it('summarizes explicitly selected conditions', () => {
     let state = updateFoodSelection(createHomeSessionState(), 'ramen', 'include');
     state = updateLocationMode(state, { mode: 'specified', label: '名古屋駅' });
-    state = updateConditions(state, { budget: 2000, transport: 'car', travelTime: 15, parking: 'required' });
+    state = updateConditions(state, { transport: 'car', travelTime: 15, takeout: true });
 
     expect(summarizeConditions(state)).toEqual([
       '料理：ラーメン',
       '場所：名古屋駅',
       '車15分',
-      '2,000円以内',
-      '駐車場あり',
-      '食べる時間：今から',
+      'テイクアウト',
     ]);
   });
 

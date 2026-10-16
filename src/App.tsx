@@ -83,11 +83,9 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
     excludeStoreIds: excludedStoreIds,
     locationLabel: homeState.location.label,
     conditions: {
-      budgetMax: homeState.conditions.budget,
       transport: homeState.conditions.transport,
       travelTimeMax: homeState.conditions.travelTime,
       eatingTime: homeState.conditions.eatingTime,
-      parkingRequired: homeState.conditions.parking === 'required',
       takeoutRequired: homeState.conditions.takeout,
     },
   });
@@ -169,11 +167,9 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
         route,
         transport: homeState.conditions.transport,
         conditions: {
-          budgetMax: homeState.conditions.budget,
           transport: homeState.conditions.transport,
           travelTimeMax: homeState.conditions.travelTime,
           eatingTime: homeState.conditions.eatingTime,
-          parkingRequired: homeState.conditions.parking === 'required',
           takeoutRequired: homeState.conditions.takeout,
         },
       }));
@@ -243,6 +239,7 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
   const decideSavedRestaurant = () => { if (!savedRouletteResult) return; recordDecision({ type: 'restaurant', id: savedRouletteResult.id, label: savedRouletteResult.name, restaurantId: savedRouletteResult.id, sessionSnapshot: buildSessionSnapshot(savedRouletteResult.foodIds) }, store); setVersion((current) => current + 1); };
   const rerunHistory = (item: DecisionHistory) => {
     const snapshot = item.sessionSnapshot;
+    const hasDeferredConditions = snapshot?.conditions?.budgetMax != null || snapshot?.conditions?.parkingRequired === true || snapshot?.conditions?.eatingTime === 'scheduled';
     const foodIds = snapshot?.foodIds?.length ? snapshot.foodIds : item.type === 'cuisine' ? [item.id] : [];
     if (foodIds.length === 0) { setMessage('この履歴には再実行に必要な条件がありません'); setActiveTab('home'); return; }
     setSelection({ include: foodIds, exclude: [] });
@@ -254,16 +251,16 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
       location: { ...current.location, label: snapshot?.locationLabel ?? null, mode: snapshot?.locationLabel ? 'specified' : 'auto' },
       conditions: snapshot?.conditions ? {
         ...current.conditions,
-        budget: snapshot.conditions.budgetMax ?? null,
+        budget: null,
         transport: snapshot.conditions.transport as typeof current.conditions.transport ?? null,
         travelTime: snapshot.conditions.travelTimeMax ?? null,
-        eatingTime: snapshot.conditions.eatingTime ?? 'now',
-        parking: snapshot.conditions.parkingRequired ? 'required' : 'unspecified',
+        eatingTime: 'now',
+        parking: 'unspecified',
         takeout: snapshot.conditions.takeoutRequired ?? false,
       } : current.conditions,
     }));
     setActiveTab('home');
-    setMessage(item.type === 'restaurant' ? '履歴から店舗検索条件を復元しました' : '履歴から料理を再実行します');
+    setMessage(hasDeferredConditions ? '以前の予算・駐車場・日時条件は現在利用できないため、復元していません' : item.type === 'restaurant' ? '履歴から店舗検索条件を復元しました' : '履歴から料理を再実行します');
   };
 
   const renderHome = () => (
@@ -294,6 +291,7 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
             <p className="eyebrow">候補から決める</p>
             <h2 id="candidate-stage-heading">この中から店舗を決める</h2>
             <p className="muted">候補を確認して、必要ならチェックを外してからルーレットを回します。</p>
+            {homeState.location.mode === 'route' && homeState.mode !== 'group' && <p className="muted">道中検索で条件に合った候補{restaurantCandidates.length}件のうち、選択中の{restaurantCandidates.filter((candidate) => selectedRestaurantIds.includes(candidate.id) && !excludedRestaurantIds.includes(candidate.id)).length}件から同確率で抽選します。検索結果は全店舗を網羅しません。</p>}
           </div>
           <button className="primary-button candidate-stage__cta" type="button" onClick={drawRestaurant}>この候補で店舗ルーレットを回す</button>
           <CandidateList candidates={restaurantCandidates} excludedIds={excludedRestaurantIds} selectedIds={selectedRestaurantIds} onToggleSelected={toggleRestaurantSelection} />
@@ -318,9 +316,12 @@ export function App({ restaurantSearchEndpoint = defaultRestaurantSearchEndpoint
   return (
     <main className="app-shell">
       {activeTab === 'home' && renderHome()}
-      {activeTab === 'saved' && <div className="home-screen"><SavedRestaurants restaurants={savedRestaurants} result={savedRouletteResult} reveal={savedReveal ?? undefined} onRevealComplete={finishSavedReveal} onRoulette={drawSavedRestaurant} onReroll={rerollSavedRestaurant} onDecision={decideSavedRestaurant} /></div>}
+      {activeTab === 'saved' && <div className="home-screen"><SavedRestaurants restaurants={savedRestaurants} result={savedRouletteResult} reveal={savedReveal ?? undefined} onRevealComplete={finishSavedReveal} onRoulette={drawSavedRestaurant} onReroll={rerollSavedRestaurant} onDecision={decideSavedRestaurant} onSelectionChange={() => { setSavedRouletteResult(null); setSavedReveal(null); }} /></div>}
       {activeTab === 'history' && <div className="home-screen"><HistoryList history={history} onRerun={rerunHistory} /></div>}
-      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onChange={(tab) => {
+        if (tab !== activeTab) { setSavedRouletteResult(null); setSavedReveal(null); }
+        setActiveTab(tab);
+      }} />
       {version > -1 && null}
     </main>
   );

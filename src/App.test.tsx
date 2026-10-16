@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { App } from './App';
 
@@ -31,5 +31,17 @@ describe('App shell', () => {
 
     expect(screen.getByText('店舗検索は場所を指定すると利用できます')).toBeInTheDocument();
     expect(screen.queryByText('現在地周辺の店舗')).not.toBeInTheDocument();
+  });
+
+  it('offers only conditions the current search can evaluate', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'その他の条件' }));
+
+    expect(screen.getByRole('combobox', { name: '移動手段' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: '移動時間' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'テイクアウト' })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: '予算' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: '駐車場あり' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: '食べる時間' })).not.toBeInTheDocument();
   });
 });

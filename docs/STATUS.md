@@ -1,7 +1,7 @@
 # Status
 
 Status: Active cross-PC handoff entry point
-Last updated: 2026-10-07
+Last updated: 2026-10-17
 
 This file is the canonical handoff document for this repository. Codex chat history is not a source of truth.
 
@@ -13,34 +13,29 @@ This file is the canonical handoff document for this repository. Codex chat hist
 
 ## Active branch
 
-`main`
+`codex/honest-candidate-controls`
 
 ## Completed in latest handoff
 
-- Merged PR #7 (`codex/debug-standard-v1`) into `main` as merge commit `1415f669b4c8af529f596ef75a905d17368cd248`.
-- Added stale route-search response protection after condition changes.
-- Validated remote restaurant-search response JSON and candidate shape.
-- Added regression coverage for asynchronous condition changes, zero/error/malformed API responses.
-- Recorded the debug results and remaining device/external-service checks in `docs/DEBUG_MATRIX.md`.
-- Fixed route search query construction to send one category-specific term without concatenating synonyms; `sushi_restaurant` uses the parent-category term `寿司`. Added a regression test for the reported sushi route and 10-minute detour case.
-- Updated `docs/product-spec.md`, `docs/DEBUG_MATRIX.md`, and food master data to record route query terms and distinguish mock verification from unavailable live Google API confirmation.
-- Follow-up live diagnosis confirmed Hama Sushi is present in the first Places response page but rejected for `openNow:false` and a calculated 11-minute detour against the selected 10-minute limit. Added a regression test for the 11-minute boundary. No condition was relaxed.
-- Removed temporary route diagnostics and its production environment variable. Published the cleaned Site source successfully (env revision 6). Updated the matrix with the live API finding and remaining opening-hours reproduction gap.
-- Re-ran the full test suite and production build on the merged `main` revision; both passed.
+- Removed budget, parking-required, and scheduled-time inputs because the live route search cannot verify those selected conditions. Older history snapshots now explain when those fields are not restored.
+- Added route-search candidate-scope copy showing condition-passing and selected counts and explaining that the result set is not exhaustive.
+- Replaced stale saved-restaurant filters with per-store checkboxes. Only checked stores are drawn, and previous saved-store results clear on selection or tab changes.
+- Stopped presenting saved opening status as current; saved result cards identify stored metadata as historical.
+- Replaced invented yen estimates from Google price levels with relative price labels, omitting the label when unavailable and hiding old saved Google yen estimates.
+- Updated `docs/product-spec.md` and added regression tests for these decisions.
 
 ## Next
 
+- Review and merge `codex/honest-candidate-controls` after checking the UI on a phone.
+- Check Google Cloud API usage and billing dashboards; introduce application rate limits only if observed usage warrants them.
 - On a mobile device or configured viewport, verify 320–390px layout and software keyboard behavior.
 - Re-run the same route search while Hama Sushi is open to verify the reported historical case against live `openNow` and routing summary values. The nighttime test established why the current result is excluded, but cannot prove what happened during the reported daytime search.
 
 ## Verification
 
-- Initial baseline: `npm test -- --run` passed (24 files, 88 tests); `npm run build` passed.
-- Targeted regression/provider tests passed after fixes.
-- Final full suite: `npm test -- --run` passed (24 files, 101 tests).
-- Final production build: `npm run build` passed (client, server, TypeScript).
-- Route provider and worker regressions: `npm test -- --run src/providers/googlePlacesProvider.test.ts src/server/restaurantSearchWorker.test.ts` passed (2 files, 13 tests).
-- Browser interaction checks: empty/whitespace input, 300-character Japanese/emoji shop name, duplicate shop, double-click roulette, tab switch during reveal, keyboard mode switch, and reload to initial home.
+- `npm test -- --run --pool=threads` passed (25 files, 108 tests).
+- `npm run build` passed (client, server, TypeScript).
+- The default fork-based Vitest pool intermittently failed to read sandbox temporary files with `ENOENT`; the threads pool completed the full suite.
 
 ## Blockers / external dependencies
 
@@ -48,4 +43,5 @@ This file is the canonical handoff document for this repository. Codex chat hist
 - The live Site is `https://meshi-roulette.genomu37.chatgpt.site`. The deployed source has no route diagnostic logging and `ROUTE_SEARCH_DIAGNOSTICS` is absent (revision 6).
 - Site secret values are redacted by the environment read API; `value: null` does not prove a secret is absent. A successful live route search confirms the configured integration works.
 - No mobile viewport/device or software keyboard was available in this session.
+- Google Cloud usage and billing settings were not inspected in this code-only session.
 - No blocker to the code/test workflow.

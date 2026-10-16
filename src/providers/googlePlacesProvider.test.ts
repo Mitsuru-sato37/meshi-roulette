@@ -15,7 +15,7 @@ describe('google places provider', () => {
       fetcher: async (_input, init) => { requestBody = String(init?.body); return new Response(JSON.stringify({ places: [{ id: 'places/1', displayName: { text: '麺処テスト' }, formattedAddress: '名古屋駅', currentOpeningHours: { openNow: true }, priceLevel: 'PRICE_LEVEL_MODERATE', location: { latitude: 35.17, longitude: 136.88 } }] }), { status: 200 }); },
     });
 
-    await expect(provider.search({ foodIds: ['ramen'], locationLabel: '名古屋駅' })).resolves.toEqual([expect.objectContaining({ id: 'places/1', name: '麺処テスト', provider: 'google', providerPlaceId: 'places/1', locationLabel: '名古屋駅', isOpen: true })]);
+    await expect(provider.search({ foodIds: ['ramen'], locationLabel: '名古屋駅' })).resolves.toEqual([expect.objectContaining({ id: 'places/1', name: '麺処テスト', provider: 'google', providerPlaceId: 'places/1', locationLabel: '名古屋駅', isOpen: true, budgetLabel: '価格帯目安：標準' })]);
     expect(requestBody).toContain('ラーメン');
   });
 

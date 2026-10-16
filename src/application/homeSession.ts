@@ -117,9 +117,6 @@ export function summarizeConditions(state: HomeSessionState): string[] {
   if (state.conditions.transport && state.conditions.travelTime) {
     summary.push(`${transportLabel(state.conditions.transport)}${state.conditions.travelTime}分`);
   }
-  if (state.conditions.budget) summary.push(`${state.conditions.budget.toLocaleString('ja-JP')}円以内`);
-  if (state.conditions.parking === 'required') summary.push('駐車場あり');
   if (state.conditions.takeout) summary.push('テイクアウト');
-  summary.push(`食べる時間：${state.conditions.eatingTime === 'now' ? '今から' : '日時指定'}`);
   return summary;
 }
