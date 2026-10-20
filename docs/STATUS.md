@@ -1,7 +1,7 @@
 # Status
 
 Status: Active cross-PC handoff entry point
-Last updated: 2026-10-17
+Last updated: 2026-10-20
 
 This file is the canonical handoff document for this repository. Codex chat history is not a source of truth.
 
@@ -14,6 +14,13 @@ This file is the canonical handoff document for this repository. Codex chat hist
 ## Active branch
 
 `codex/honest-candidate-controls`
+
+## Cross-PC handoff check (2026-10-20)
+
+- The active branch is clean and matches `origin/codex/honest-candidate-controls` at `c3465da26da3e28c628f6d15252126c2a1fc8f37` before this handoff update.
+- A separate, unfinished mobile home redesign had been kept only in local `stash@{0}`. Its seven modified source/test files and three untracked source/design files were inspected for credentials, personal or internal information, licensed or large data, and generated output; none was identified. The stash was preserved unchanged and pushed as the recovery snapshot `origin/codex/mobile-home-redesign-snapshot` at `00ce9043ac9895c268ba7457a07dd4bca608b10b`.
+- The recovery snapshot is a Git stash commit, not an integrated feature branch. On another PC, after `git fetch origin`, run `git stash store -m "mobile home redesign recovery" origin/codex/mobile-home-redesign-snapshot`, then `git stash branch codex/mobile-home-redesign-recovery 'stash@{0}'` only when resuming that separate work. It is based on older code and needs integration and verification before merging.
+- The GitHub repository is public at `https://github.com/Mitsuru-sato37/meshi-roulette`; the connected account has push access. No implementation changed during this handoff check.
 
 ## Completed in latest handoff
 
