@@ -49,3 +49,11 @@ This file is the canonical handoff document for this repository. Codex chat hist
 - Site secret values are redacted by the environment read API; `value: null` does not prove a secret is absent. A successful live route search confirms the configured integration works.
 - No mobile viewport/device or software keyboard was available in this session.
 - No blocker to the code/test workflow.
+
+
+## Shared standard alignment — 2026-11-02
+
+- Updated this repository's instructions for scope-based idea storage and public-repository privacy.
+- Canonical source: https://github.com/Mitsuru-sato37/ai-workspace-foundation/blob/main/docs/11_idea_intake.md
+- Rollout record: https://github.com/Mitsuru-sato37/ai-workspace-foundation/blob/main/docs/14_shared_standard_rollout.md
+- This branch contains the alignment change; it is complete after the PR is merged.
